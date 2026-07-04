@@ -1,50 +1,56 @@
 # RK3588 AI Companion Robot
 
-This repository contains a public release snapshot of an RK3588-based edge AI companion robot for child interaction, reading assistance, safety monitoring, person following, ROS2 robot control, and parent dashboard management.
+本仓库是一个基于 RK3588 的边缘 AI 儿童陪伴机器人项目公开快照。系统面向儿童陪伴互动、伴读早教和家庭安全监护场景，集成语音 Agent、RKNN 端侧视觉推理、ROS2 机器人控制、读书机械臂、平台 RGB-D 相机、环境传感、HDMI 表情显示和家长端 Dashboard。
 
-## Repository Layout
+## 项目能力
+
+- 语音唤醒、ASR/VAD、TTS 播放、打断响应和大模型工具调用。
+- 纸质书伴读模式，包括读书机械臂对齐、书页拍摄、透视矫正和本地书本数据库匹配。
+- 儿童安全监护，包括摔倒、危险物接近、睡眠在场提醒、事件记录和家长端查看。
+- 人物身份观察、指定人物寻找和人物跟随，并通过 ROS2 执行链路接入底盘控制。
+- 家长端 Dashboard，用于实时画面、历史记录、安全状态、人物/孩子设置和机器人控制。
+
+## 仓库结构
 
 ```text
-cloud-model/      Main voice Agent, dashboard backend/frontend, runtime scheduler, safety integration, reading mode, TTS/ASR glue, and tool calls.
-ros2/             ROS2 workspace for platform camera, reading arm, chassis, obstacle guard, person finding/following, and related robot services.
-hardware/pcb/     Reserved for PCB files and sensor expansion board documentation.
-hardware/3d-models/
-                  Reserved for mechanical and 3D model files.
-docs/             Public release notes, dependency/license audit, and omitted asset manifest.
+cloud-model/        主语音 Agent、Dashboard、资源调度、安全守护整合、读书模式、ASR/TTS 和工具调用。
+ros2/               ROS2 工作区，包含平台相机、读书机械臂、底盘、避障、人物寻找/跟随等机器人服务。
+hardware/pcb/       预留目录，用于后续上传传感器扩展 PCB 资料。
+hardware/3d-models/ 预留目录，用于后续上传机械结构和 3D 建模资料。
+docs/               公开发布说明、依赖许可审计、省略资产清单和资产恢复说明。
 ```
 
-## Project Summary
+## 快照来源
 
-The system runs on an RK3588 edge AI board and combines voice interaction, local RKNN visual inference, ROS2 robot control, a reading-arm camera, a platform RGB-D camera, environmental sensing, HDMI expression display, and a parent-facing web dashboard.
+本仓库由两个本地主线快照组合而成：
 
-Main capabilities include:
+- `cloud-model/`：来自 `cloud-model-safety-mainline`，源提交 `7d13dc2`。
+- `ros2/`：来自 `ros2`，源提交 `2b0bdef`。
 
-- voice wake-up, ASR/VAD, TTS playback, interruption handling, and LLM tool calling;
-- paper-book reading mode with reading-arm alignment, page capture, page rectification, and local book database matching;
-- safety monitoring for falls, dangerous-object proximity, sleep-presence reminders, and event recording;
-- person identity observation, person seeking, and person following through the ROS2 execution chain;
-- parent dashboard for live view, history records, safety status, child/person settings, and robot control.
+两个源仓库原本的 `.git/` 目录没有嵌入本仓库。本仓库用于项目公开展示和交付，不用于完整保留两个源仓库的历史记录。
 
-## Snapshot Sources
+## 公开发布说明
 
-This monorepo is assembled from two local mainline snapshots:
-
-- `cloud-model/`: source `cloud-model-safety-mainline`, commit `7d13dc2`.
-- `ros2/`: source `ros2`, commit `2b0bdef`.
-
-The original `.git/` directories are not embedded. This repository is intended as a public project delivery repository, not a full preservation of each source repository's history.
-
-## Public Release Notes
-
-This is a public-safe snapshot. Real cloud API keys are not included. Runtime keys must be supplied through environment variables:
+本公开快照已经移除真实云端 API Key。运行时请通过环境变量提供密钥：
 
 ```bash
 export DASHSCOPE_API_KEY="your-key"
-export DASHSCOPE_TTS_API_KEY="your-tts-key"  # optional; falls back to DASHSCOPE_API_KEY
+export DASHSCOPE_TTS_API_KEY="your-tts-key"  # 可选；未设置时默认使用 DASHSCOPE_API_KEY
 ```
 
-Large third-party assets and binaries above the public release threshold were omitted from this initial upload. See `docs/OMITTED_LARGE_ASSETS.txt` and `docs/PUBLIC_RELEASE_NOTES.md`.
+大型第三方资产、模型文件和部分二进制文件没有放入本次公开快照。具体清单见：
 
-## License Status
+- `docs/OMITTED_LARGE_ASSETS.txt`
+- `docs/ASSET_RESTORE_GUIDE.md`
 
-The root project license is intentionally not declared yet. Several included ROS2 packages and third-party components have their own licenses or incomplete license declarations. Review `docs/DEPENDENCY_LICENSE_AUDIT.md` before changing repository visibility, redistributing binaries, or adding a root `LICENSE`.
+## 许可状态
+
+本仓库根目录暂未声明统一开源许可证。原因是 ROS2 工作区中包含多个第三方包、厂商 SDK、模型文件和许可证声明不完整的组件。添加根目录 `LICENSE` 前，请先阅读：
+
+- `docs/DEPENDENCY_LICENSE_AUDIT.md`
+
+## 后续计划
+
+- 补充 PCB 和 3D 建模资料。
+- 根据许可审计结果决定根目录许可证。
+- 根据需要通过 Git LFS、GitHub Release 或外部下载方式补充可公开分发的大型资产。

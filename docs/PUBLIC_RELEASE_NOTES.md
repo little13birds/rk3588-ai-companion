@@ -6,8 +6,6 @@ This repository is a public GitHub delivery snapshot that combines the latest lo
 
 - `cloud-model/`: Python voice Agent, dashboard, runtime scheduler, reading mode, safety integration, tests, docs, and frontend assets.
 - `ros2/`: ROS2 packages, launch files, scripts, robot control code, perception code, and package manifests.
-- `hardware/pcb/`: reserved directory for later PCB materials.
-- `hardware/3d-models/`: reserved directory for later 3D modeling materials.
 
 ## What Was Changed for Public Safety
 
@@ -29,7 +27,7 @@ This repository is a public GitHub delivery snapshot that combines the latest lo
 - Decide the final root project license.
 - Review packages with `TODO: License declaration`, `all copyrights reserved`, GPL, and non-commercial Creative Commons licenses.
 - Decide whether omitted large assets should be distributed through Git LFS, GitHub Releases, external vendor downloads, or not redistributed.
-- Add PCB and 3D modeling files after checking third-party IP and export constraints.
+- Decide how to publish PCB and 3D modeling files after checking third-party IP and export constraints.
 
 ## Known Import Quality Notes
 

@@ -24,9 +24,5 @@ Do not commit restored binary assets directly to this public repository unless t
 
 ## Future Hardware Assets
 
-PCB and 3D modeling materials should be placed under:
-
-- `hardware/pcb/`
-- `hardware/3d-models/`
-
-Before committing hardware files, check whether they contain manufacturer account data, private notes, absolute local paths, or third-party model restrictions.
+PCB and 3D modeling materials are not included in this public snapshot.
+Before publishing hardware files, check whether they contain manufacturer account data, private notes, absolute local paths, or third-party model restrictions.

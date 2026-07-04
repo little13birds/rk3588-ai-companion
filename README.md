@@ -15,8 +15,6 @@
 ```text
 cloud-model/        主语音 Agent、Dashboard、资源调度、安全守护整合、读书模式、ASR/TTS 和工具调用。
 ros2/               ROS2 工作区，包含平台相机、读书机械臂、底盘、避障、人物寻找/跟随等机器人服务。
-hardware/pcb/       预留目录，用于后续上传传感器扩展 PCB 资料。
-hardware/3d-models/ 预留目录，用于后续上传机械结构和 3D 建模资料。
 docs/               公开发布说明、依赖许可审计、省略资产清单和资产恢复说明。
 ```
 
@@ -51,6 +49,6 @@ export DASHSCOPE_TTS_API_KEY="your-tts-key"  # 可选；未设置时默认使用
 
 ## 后续计划
 
-- 补充 PCB 和 3D 建模资料。
+- 评估 PCB 和 3D 建模资料的公开方式。
 - 根据许可审计结果决定根目录许可证。
 - 根据需要通过 Git LFS、GitHub Release 或外部下载方式补充可公开分发的大型资产。

@@ -1,0 +1,11 @@
+build/
+install/
+log/
+Log/
+**/__pycache__/
+*.pyc
+*.swp
+/yolov8n-board-rk3588-fp.rknn
+/yolov8n-board-rk3588-i8.rknn
+/yolov8n.onnx
+/yolov8n.pt

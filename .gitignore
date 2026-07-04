@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Runtime logs and local state
+*.log
+logs/
+log/
+tmp/
+temp/
+*.sqlite
+*.sqlite3
+*.db
+
+# Secrets and local configuration
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ROS2 build outputs
+build/
+install/
+ros2/build/
+ros2/install/
+ros2/log/
+
+# Model and large binary artifacts
+*.rknn
+*.onnx
+*.pt
+*.pth
+*.engine
+*.tflite
+*.caffemodel
+*.dat
+*.bin
+*.so
+*.so.*
+*.a
+*.dll
+*.dylib
+*.tar.gz
+
+# Media/runtime captures
+reading_captures/
+screenshots/
+snapshots/
+*.wav
+*.mp3
+*.mp4
+*.avi
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# CAD temporary files
+*.step~
+*.stp~
+*.f3d~
+*.kicad_sch-bak
+*.kicad_pcb-bak

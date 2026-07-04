@@ -1,0 +1,125 @@
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-soft: #f9fafb;
+  --line: #dfe4ea;
+  --line-strong: #c8d0d9;
+  --text: #17202a;
+  --muted: #667085;
+  --faint: #8a95a3;
+  --brand: #0f766e;
+  --brand-strong: #0b5f59;
+  --brand-soft: #e8f5f3;
+  --blue: #2563eb;
+  --blue-soft: #eaf1ff;
+  --warn: #c2410c;
+  --warn-soft: #fff1e8;
+  --danger: #b42318;
+  --danger-soft: #fff0f0;
+  --ok: #15803d;
+  --ok-soft: #eaf7ee;
+  --shadow: 0 14px 34px rgba(15, 23, 42, .08);
+  --shadow-soft: 0 3px 14px rgba(15, 23, 42, .06);
+  --radius: 8px;
+  --topbar-h: 66px;
+  --side-bg: #eef3f6;
+  --side-text: #18212f;
+  --side-muted: #667085;
+  --side-active: #d9eeeb;
+}
+
+body[data-theme="night"] {
+  --bg: #111827;
+  --surface: #182231;
+  --surface-soft: #202b3a;
+  --line: #2d3949;
+  --line-strong: #3a4758;
+  --text: #f8fafc;
+  --muted: #aeb8c5;
+  --faint: #8f9aaa;
+  --brand: #2dd4bf;
+  --brand-strong: #5eead4;
+  --brand-soft: #123d3a;
+  --blue: #7aa2ff;
+  --blue-soft: #172a4f;
+  --warn: #fb923c;
+  --warn-soft: #432312;
+  --danger: #f87171;
+  --danger-soft: #451a1a;
+  --ok: #4ade80;
+  --ok-soft: #14351f;
+  --shadow: 0 16px 38px rgba(0, 0, 0, .28);
+  --shadow-soft: 0 4px 18px rgba(0, 0, 0, .18);
+  --side-bg: #162233;
+  --side-text: #f8fafc;
+  --side-muted: #aeb8c5;
+  --side-active: #123d3a;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+input,
+select {
+  min-height: 56px;
+  padding: 0 12px;
+}
+
+textarea {
+  min-height: 104px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .35);
+  outline-offset: 2px;
+}

@@ -1,0 +1,3123 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>小智 — 家长看护</title>
+<style>
+:root {
+  --bg: #f7f8fb;
+  --card: #fff;
+  --card-soft: #fbfcfe;
+  --border: #e7e9ef;
+  --text: #1f2937;
+  --dim: #7b8494;
+  --muted: #a5adba;
+  --accent: #e8960c;
+  --accent-strong: #cf7c05;
+  --warn: #d94841;
+  --warn-soft: #fff1f0;
+  --ok: #35a66b;
+  --ok-soft: #edf9f2;
+  --blue-soft: #eef5ff;
+  --blue: #4c7ed9;
+  --eye: #e8960c;
+  --accent-soft: #fff7eb;
+  --radius: 8px;
+  --shadow: 0 8px 24px rgba(31,41,55,.08);
+  --shadow-soft: 0 2px 10px rgba(31,41,55,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    linear-gradient(180deg, #fff 0, var(--bg) 180px);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+}
+button, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+
+/* ── Header ── */
+header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; background: rgba(255,255,255,.92);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top:0; z-index:10;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 1px 8px rgba(31,41,55,.05);
+}
+header .logo {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent-soft);
+  border: 1px solid #f3d7a9;
+  font-size: 19px;
+}
+header h1 { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: .2px; }
+header .conn {
+  margin-left: auto; display: flex; align-items: center; gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dim);
+  font-size: 11px;
+}
+header .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ok); box-shadow: 0 0 5px var(--ok);
+}
+header .dot.mock { background: #a80; box-shadow: 0 0 5px #a80; }
+header .dot.off  { background: var(--warn); box-shadow: 0 0 5px var(--warn); }
+
+/* ── Alert Toast ── */
+.toast {
+  position: fixed; top: 58px; left: 12px; right: 12px; z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 500;
+  transform: translateY(-120%);
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  max-width: 656px;
+  margin: 0 auto;
+}
+.toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.toast.warn { background: var(--warn-soft); border: 1px solid #f4c7c3; color: #af2f2a; }
+.toast.info { background: #eef5ff; border: 1px solid #cfe0ff; color: #315fad; }
+.toast .toast-icon { font-size: 18px; flex-shrink: 0; }
+.toast .toast-close {
+  margin-left: auto; background: none; border: none; color: inherit;
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+}
+
+/* ── Main Content Area ── */
+main {
+  flex: 1; overflow-y: auto;
+  padding: 14px 12px; padding-bottom: 82px;
+  max-width: 680px; margin: 0 auto; width: 100%;
+}
+
+/* ── Pages ── */
+.page { display: none; }
+.page.active { display: block; animation: pageIn .18s ease; }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Camera ── */
+.cam {
+  position: relative; background: #101419; border-radius: var(--radius);
+  overflow: hidden; aspect-ratio: 4/3; margin-bottom: 14px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--shadow);
+}
+.cam img { width: 100%; height: 100%; object-fit: cover; }
+.cam .placeholder {
+  position: absolute; inset: 0; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  color: #d5d9e1; font-size: 13px; line-height: 1.8;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,0)),
+    #101419;
+}
+.cam .placeholder .icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-size: 26px;
+}
+.cam .footer {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 28px 10px 8px; font-size: 11px;
+  background: linear-gradient(transparent, rgba(0,0,0,.64));
+}
+.cam .footer .time { color: rgba(255,255,255,.82); }
+.cam .footer button {
+  background: rgba(255,255,255,.18); color: #fff;
+  border: 1px solid rgba(255,255,255,.22);
+  padding: 5px 10px; border-radius: 999px; font-size: 11px; cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.cam .footer button:active {
+  background: rgba(255,255,255,.28);
+  transform: translateY(1px);
+}
+.cam.fullscreen {
+  position: fixed; inset: 0; z-index: 200; border-radius: 0;
+  aspect-ratio: auto; width: 100%; height: 100%; margin: 0;
+}
+.cam.fullscreen .footer { padding: 10px 16px; }
+.cam.fullscreen .footer button { padding: 6px 14px; font-size: 14px; }
+
+/* ── Dashboard Row: 田字格 (左) + 方向键 (右) ── */
+.dash-row {
+  display: flex; gap: 12px; margin-bottom: 14px; align-items: stretch;
+}
+.dash-left {
+  flex: 1; display: grid;
+  grid-template: 1fr 1fr / 1fr 1fr;
+  gap: 10px; min-width: 0;
+}
+.dash-card {
+  background: linear-gradient(180deg, #fff, var(--card-soft));
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 8px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; min-width: 0;
+  min-height: 78px;
+  box-shadow: var(--shadow-soft);
+}
+.dash-card .val {
+  font-size: 16px; font-weight: 700;
+  color: var(--text);
+  max-width: 100%;
+  line-height: 1.25;
+}
+.dash-card .lbl { font-size: 10px; color: var(--dim); margin-top: 3px; }
+.dash-card .sub {
+  font-size: 9px; margin-top: 3px; color: var(--muted);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.status-card .val {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+.status-card .sub {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.dash-right {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex-shrink: 0; justify-content: center;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.dpad {
+  display: grid;
+  grid-template: 40px 40px 40px / 40px 40px 40px;
+  gap: 4px;
+}
+.dpad button {
+  width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--card-soft); color: #586170; font-size: 16px;
+  cursor: pointer; font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  box-shadow: inset 0 -1px 0 rgba(31,41,55,.04);
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.dpad button:active,
+.dpad button.is-pressed {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: #f0c27a;
+  transform: scale(.96);
+}
+.dpad .up    { grid-column:2; grid-row:1; }
+.dpad .left  { grid-column:1; grid-row:2; }
+.dpad .right { grid-column:3; grid-row:2; }
+.dpad .down  { grid-column:2; grid-row:3; }
+
+.dash-acts {
+  display: flex; gap: 6px; width: 100%;
+}
+.dash-acts button {
+  flex: 1;
+  padding: 7px 9px; font-size: 11px; border-radius: 8px;
+  cursor: pointer; font-family: inherit; border: 1px solid;
+  background: #fff; white-space: nowrap;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.dash-acts .btn-find  { color: #2e8c61; border-color: #bde6cf; background: var(--ok-soft); }
+.dash-acts .btn-stop  { color: var(--warn); border-color: #f0c5c2; background: var(--warn-soft); }
+.dash-acts button:active { transform: scale(.97); }
+
+@media (min-width: 500px) {
+  .dpad { grid-template: 42px 42px 42px / 42px 42px 42px; }
+  .dpad button { width:42px; height:42px; font-size:18px; }
+  .dash-card .val { font-size: 18px; }
+}
+
+/* ── Conversation ── */
+.convo { margin-bottom: 12px; }
+.convo-scroll {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px 4px 2px 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #d8dde6 transparent;
+}
+.convo-scroll::-webkit-scrollbar { width: 5px; }
+.convo-scroll::-webkit-scrollbar-thumb {
+  background: #d8dde6;
+  border-radius: 999px;
+}
+.activity-scroll {
+  max-height: 320px;
+}
+.convo-item {
+  margin-bottom: 12px;
+}
+.convo-item .meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); margin-bottom: 4px;
+}
+.convo-item .meta.child { justify-content: flex-start; padding-left: 2px; }
+.convo-item .meta.robot { justify-content: flex-end;   padding-right: 2px; }
+.convo-item .meta.parent { justify-content: flex-end; padding-right: 2px; }
+.convo-item .bubble {
+  display: inline-block; max-width: 85%; padding: 9px 12px;
+  border-radius: 14px; font-size: 13px; line-height: 1.55;
+  word-break: break-all;
+  box-shadow: 0 1px 5px rgba(31,41,55,.05);
+}
+.convo-item .bubble.child {
+  background: var(--blue-soft); color: #243b63; float: left;
+  border-bottom-left-radius: 5px;
+}
+.convo-item .bubble.robot {
+  background: var(--accent-soft); color: #5b3d10; float: right;
+  border-bottom-right-radius: 5px;
+}
+.convo-item .bubble.parent {
+  background: var(--ok-soft); color: #1f6b45; float: right;
+  border-bottom-right-radius: 5px;
+}
+.convo-item::after { content:''; display:table; clear:both; }
+
+/* ── Unified Timeline ── */
+.timeline-item {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-time {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: right;
+  padding-top: 2px;
+}
+.timeline-main { min-width: 0; }
+.timeline-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.timeline-text {
+  color: var(--dim);
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 3px;
+  word-break: break-word;
+}
+.timeline-badge {
+  align-self: start;
+  min-width: 38px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+.timeline-item.kind-system .timeline-badge {
+  color: #315fad; border-color: #cfe0ff; background: var(--blue-soft);
+}
+.timeline-item.kind-parent_action .timeline-badge,
+.timeline-item.kind-sleep .timeline-badge {
+  color: #1f6b45; border-color: #bde6cf; background: var(--ok-soft);
+}
+.timeline-item.kind-safety .timeline-badge,
+.timeline-item.level-warn .timeline-badge,
+.timeline-item.level-danger .timeline-badge {
+  color: var(--warn); border-color: #f0c5c2; background: var(--warn-soft);
+}
+.timeline-item.kind-reading .timeline-badge {
+  color: var(--accent-strong); border-color: #f0c27a; background: var(--accent-soft);
+}
+.timeline-item.kind-conversation .timeline-badge {
+  color: #315fad; border-color: #d7e5ff; background: #f5f9ff;
+}
+@media (max-width: 360px) {
+  .timeline-item { grid-template-columns: 45px minmax(0, 1fr) auto; gap: 8px; }
+  .timeline-badge { min-width: 32px; padding: 4px 6px; }
+}
+
+/* ── Send Message ── */
+.send-bar {
+  display: flex; gap: 8px; margin-bottom: 12px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.send-bar input {
+  flex: 1; padding: 10px 12px; font-size: 14px;
+  background: var(--card-soft); color: var(--text);
+  border: 1px solid transparent; border-radius: var(--radius);
+  min-width: 0;
+}
+.send-bar input:focus { outline: none; border-color: #f0c27a; background: #fff; }
+.send-bar input::placeholder { color: #bbb; }
+.send-bar button {
+  padding: 10px 16px; font-size: 14px;
+  background: linear-gradient(180deg, #f0a12c, var(--accent)); color: #fff;
+  border: none; border-radius: var(--radius);
+  cursor: pointer; font-weight: 700;
+  box-shadow: 0 4px 10px rgba(232,150,12,.24);
+}
+.send-bar button:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(232,150,12,.22); }
+.send-ok { font-size: 12px; color: var(--ok); display: none; margin-top: -8px; margin-bottom: 12px; }
+
+/* ── Reading Report ── */
+.section-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; color: #5f6878;
+  letter-spacing: .2px;
+  margin: 18px 0 10px;
+}
+.report-cards {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px;
+}
+.report-card {
+  background: linear-gradient(180deg, #fff, var(--card-soft));
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 10px; text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+.report-card .num { font-size: 27px; font-weight: 800; color: var(--eye); line-height: 1; }
+.report-card .lbl { font-size: 11px; color: var(--dim); margin-top: 5px; }
+
+/* ── Reading Records ── */
+.reading-record-list {
+  max-height: 210px;
+  overflow-y: auto;
+  padding: 4px 2px;
+  -webkit-overflow-scrolling: touch;
+}
+.reading-record-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 10px;
+  margin-bottom: 7px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.reading-record-date {
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 700;
+}
+.reading-record-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 700;
+}
+.reading-record-pages {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+/* ── Tab Bar ── */
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; background: rgba(255,255,255,.94); border-top: 1px solid var(--border);
+  z-index: 10; max-width: 680px; margin: 0 auto;
+  box-shadow: 0 -6px 18px rgba(31,41,55,.07);
+  backdrop-filter: blur(14px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav button {
+  flex: 1; padding: 10px 8px 12px;
+  font-size: 12px; color: var(--dim); background: none;
+  border: none; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  position: relative;
+  transition: color .15s, transform .15s;
+}
+nav button .tab-icon { font-size: 20px; }
+nav button.active { color: var(--accent); font-weight: 700; }
+nav button.active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 34px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+nav button:active { transform: scale(.98); }
+
+/* ── History ── */
+.history-bar {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  margin-bottom: 10px;
+}
+.history-bar button {
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 5px 11px; cursor: pointer; font-size: 14px;
+  color: #5f6878;
+  box-shadow: var(--shadow-soft);
+}
+.history-bar button:active { background: var(--card-soft); transform: translateY(1px); }
+.history-bar span {
+  min-width: 76px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: #5f6878;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.history-thumbs {
+  display: flex; flex-direction: column; gap: 8px; overflow: visible; padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.history-category-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.history-category-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #5f6878;
+}
+.history-category-items {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  -webkit-overflow-scrolling: touch;
+}
+.history-thumbs .thumb {
+  width: 56px; height: 56px; flex-shrink: 0;
+  background: #f0f0f0; border: 1px solid #e0e0e0; border-radius: 4px;
+  overflow: hidden; cursor: pointer; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+}
+.history-thumbs .thumb img { width:100%; height:100%; object-fit:cover; }
+.history-thumbs .thumb .th-time { font-size: 9px; color: #888; margin-top: 1px; }
+.history-thumbs .thumb .th-reason { font-size: 8px; color: #aaa; }
+.history-thumbs .thumb.active { border-color: var(--accent); border-width: 2px; }
+.history-preview {
+  margin-top: 10px; background: #000; border-radius: var(--radius);
+  overflow: hidden; position: relative;
+  box-shadow: var(--shadow);
+}
+.history-preview img { width: 100%; display: block; }
+.history-corner-overlay {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1;
+}
+.history-corner-polygon {
+  fill: rgba(232,150,12,.14);
+  stroke: #ffb13c;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+.history-corner-dot {
+  fill: #fff;
+  stroke: #ffb13c;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.history-corner-label {
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,.75);
+  stroke-width: 4;
+  font-size: 18px;
+  font-weight: 700;
+}
+.history-preview-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 8px 12px; background: linear-gradient(transparent, rgba(0,0,0,.6));
+  color: #ddd; font-size: 12px; z-index: 2;
+}
+.history-empty {
+  width: 100%;
+  font-size: 13px; color: var(--muted); text-align: center; padding: 20px;
+  background: #fff;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.reserved-panel {
+  background: #fff;
+  border: 1px dashed #e4c48d;
+  border-radius: var(--radius);
+  padding: 14px;
+  color: #76521c;
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: var(--shadow-soft);
+}
+.reserved-panel .reserved-title {
+  color: #5b3d10;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.reserved-panel code {
+  display: block;
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--accent-soft);
+  border-radius: 6px;
+  color: #6a4307;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  white-space: normal;
+  word-break: break-all;
+}
+.care-event-list {
+  max-height: 230px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.care-event-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.care-event-row img {
+  width: 54px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #eef1f5;
+}
+.care-event-main { min-width: 0; }
+.care-event-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.care-event-meta { font-size: 11px; color: var(--dim); margin-top: 2px; }
+.care-event-open {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-soft);
+  color: #5f6878;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ── Safety ── */
+.safety-grid {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 16px;
+}
+@media (min-width: 500px) {
+  .safety-grid { grid-template-columns: repeat(4,1fr); }
+}
+.safety-card {
+  position: relative;
+  min-height: 104px;
+  background: linear-gradient(180deg, #fff, var(--card-soft));
+  border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 13px 10px; text-align: center;
+  box-shadow: var(--shadow-soft);
+  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  overflow: hidden;
+}
+.safety-card::before {
+  content: '';
+  position: absolute; left: 10px; right: 10px; top: 0;
+  height: 3px; border-radius: 999px;
+  background: transparent;
+}
+.safety-card .s-icon {
+  width: 34px; height: 34px; margin: 0 auto 7px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: 21px;
+  background: rgba(255,255,255,.68);
+}
+.safety-card .s-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.safety-card .s-detail {
+  font-size: 10px; color: var(--muted); margin-top: 4px;
+  line-height: 1.35;
+}
+.safety-card.warn {
+  border-color: #f0b8b4;
+  background: linear-gradient(180deg, #fff, var(--warn-soft));
+  box-shadow: 0 6px 18px rgba(217,72,65,.12);
+  animation: safetyPulse 2.2s ease-in-out infinite;
+}
+.safety-card.warn::before { background: var(--warn); }
+.safety-card.warn .s-icon { background: #ffe4e1; }
+.safety-card.warn .s-detail { color: var(--warn); font-weight: 700; }
+.safety-card.ack {
+  border-color: #d8dde6;
+  background: linear-gradient(180deg, #fff, #f6f8fb);
+  animation: none;
+}
+.safety-card.ack::before { background: var(--muted); }
+.safety-card.ack .s-icon { background: #edf1f6; }
+.safety-card.ack .s-detail { color: #6b7280; font-weight: 600; }
+.safety-ack-btn {
+  margin-top: 8px;
+  padding: 5px 10px;
+  border: 1px solid #f0c5c2;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--warn);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.safety-ack-btn:active { transform: translateY(1px); }
+.safety-card.good {
+  border-color: #c3e5d3;
+  background: linear-gradient(180deg, #fff, var(--ok-soft));
+}
+.safety-card.good::before { background: var(--ok); }
+.safety-card.good .s-icon { background: #def5e8; }
+@keyframes safetyPulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+@media (max-width: 360px) {
+  .safety-grid { gap: 8px; }
+  .safety-card { min-height: 98px; padding: 11px 8px; }
+  .safety-card .s-label { font-size: 11px; }
+  .safety-card .s-detail { font-size: 9px; }
+}
+
+/* ── Sleep ── */
+.sleep-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sleep-row label { font-size: 13px; color: var(--dim); white-space: nowrap; }
+.sleep-control {
+  min-height: 36px;
+  padding: 7px 10px; font-size: 14px; font-weight: 600;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text); font-family: inherit;
+  box-shadow: inset 0 -1px 0 rgba(31,41,55,.03);
+}
+.sleep-control:focus { outline: none; border-color: #f0c27a; }
+.sleep-duration-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: -2px;
+  margin-bottom: 12px;
+}
+.duration-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.duration-field input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  font-family: inherit;
+}
+.duration-field input:focus { outline: none; }
+.duration-field input::-webkit-outer-spin-button,
+.duration-field input::-webkit-inner-spin-button {
+  margin: 0;
+}
+.duration-unit {
+  flex-shrink: 0;
+  min-width: 28px;
+  color: var(--dim);
+  font-size: 13px;
+  font-weight: 700;
+}
+@media (max-width: 360px) {
+  .sleep-duration-row { gap: 8px; }
+  .duration-field { padding: 6px 8px; }
+  .duration-field input { font-size: 18px; }
+}
+.sleep-remind-input { flex: 1; min-width: 180px; }
+.sleep-row button, .sleep-actions button {
+  min-height: 36px;
+  padding: 7px 14px; font-size: 13px; background: #fff;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; color: var(--text); font-family: inherit;
+  box-shadow: var(--shadow-soft);
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.sleep-row button:active, .sleep-actions button:active { background: var(--card-soft); transform: translateY(1px); }
+.checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 36px;
+  align-items: center;
+}
+.check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+}
+.check-pill input { margin: 0; }
+.sleep-remind-row { margin-top: 10px; }
+.btn-remind {
+  border-color: #f0c27a !important;
+  color: var(--accent-strong) !important;
+  background: var(--accent-soft) !important;
+}
+.sleep-state {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  padding: 11px 14px; border-radius: var(--radius);
+  font-size: 14px; font-weight: 600;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-soft);
+}
+.sleep-state.awake { background: #f0f4ff; color: #3f4f83; border-color: #d8e2ff; }
+.sleep-state.sleeping { background: var(--ok-soft); color: #226344; border-color: #c3e5d3; }
+.sleep-state.restless { background: var(--warn-soft); color: #8a342d; border-color: #f0c5c2; }
+.sleep-presence-debug {
+  margin: -4px 0 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--dim);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.sleep-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.sleep-actions .btn-aid {
+  background: var(--accent); color: #fff; border: none;
+  font-weight: 600;
+}
+.sleep-actions .btn-aid:active { opacity: .8; }
+.auto-toggle {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim);
+  min-height: 36px;
+  padding: 7px 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+.auto-toggle input[type=checkbox] {
+  width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+}
+
+.aid-box {
+  background: linear-gradient(180deg, #fff, var(--card-soft)); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 4px;
+  box-shadow: var(--shadow-soft);
+  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.aid-box-header {
+  display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px;
+}
+.aid-box-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.aid-box-sub  { font-size: 12px; color: var(--dim); }
+.aid-box-actions { display: flex; gap: 8px; }
+.aid-box-actions button {
+  flex: 1;
+  padding: 9px 18px; font-size: 13px; border-radius: var(--radius);
+  cursor: pointer; font-family: inherit; border: 1px solid var(--border);
+  background: #fff; color: var(--text);
+  transition: transform .12s ease, background .12s ease;
+}
+.aid-box-actions .btn-aid {
+  background: linear-gradient(180deg, #f0a12c, var(--accent)); color: #fff; border: none; font-weight: 600;
+  box-shadow: 0 4px 10px rgba(232,150,12,.2);
+}
+.aid-box-actions button:active { transform: translateY(1px); }
+.aid-box.active {
+  border-color: #addfca; background: linear-gradient(180deg, #fff, #f2fbf6);
+  box-shadow: 0 6px 18px rgba(53,166,107,.1);
+}
+.aid-box.active .aid-box-sub { color: var(--ok); }
+.aid-countdown {
+  font-weight: 800;
+  color: var(--ok);
+}
+
+/* ── People ── */
+.people-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.people-actions button, .people-actions label {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+.people-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.people-card, .candidate-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+.people-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  background: #edf1f6;
+  display: grid;
+  place-items: center;
+  color: var(--dim);
+  font-weight: 800;
+  overflow: hidden;
+}
+.people-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.people-name { font-size: 15px; font-weight: 800; color: var(--text); }
+.people-meta { font-size: 11px; color: var(--dim); margin-top: 3px; }
+.candidate-card input {
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-weight: 700;
+}
+.people-card button, .candidate-card button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.people-status {
+  min-height: 20px;
+  margin-bottom: 8px;
+  color: var(--dim);
+  font-size: 12px;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(17, 24, 39, .36);
+  padding: 16px;
+}
+.modal-backdrop.show { display: flex; }
+.modal-panel {
+  width: min(420px, 100%);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(17,24,39,.22);
+  padding: 16px;
+}
+.modal-title { font-size: 16px; font-weight: 900; margin-bottom: 10px; }
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.modal-actions button {
+  flex: 1;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 800;
+}
+.modal-actions .primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Lightbox ── */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.9); align-items: center; justify-content: center;
+}
+.lightbox.show { display: flex; }
+.lightbox img { max-width: 95vw; max-height: 85vh; border-radius: 4px; }
+.lightbox .lclose {
+  position: absolute; top: 16px; right: 24px;
+  font-size: 36px; color: #fff; cursor: pointer;
+}
+
+/* ── Responsive ── */
+@media (min-width: 700px) {
+  .dpad-wrap { justify-content: center; gap: 32px; }
+  .quick-row { gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">🤖</span>
+  <h1>小智家长看护</h1>
+  <span class="conn"><span class="dot mock" id="conn-dot"></span><span id="conn-text">演示</span></span>
+</header>
+
+<!-- Alert Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">⚠️</span>
+  <span id="toast-text"></span>
+  <button class="toast-close" onclick="dismissToast()">✕</button>
+</div>
+
+<!-- Page 1: Live -->
+<main>
+<div class="page active" id="page-live">
+
+  <!-- Camera -->
+  <div class="cam" id="cam-box">
+    <img id="cam-img" src="" style="display:none" />
+    <div class="placeholder" id="cam-placeholder">
+      <span class="icon">📷</span>等待连接机器人...
+    </div>
+    <div class="footer">
+      <span class="time" id="cam-time"></span>
+      <span class="time" id="cam-source">--</span>
+      <div style="display:flex;gap:4px;">
+        <button onclick="refreshCamera()">🔄</button>
+        <button onclick="toggleFullscreen()" id="btn-fs">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Grid -->
+  <div class="dash-row">
+    <div class="dash-left">
+      <div class="dash-card status-card">
+        <div class="val" id="child-status-val">🎮</div>
+        <div class="lbl">孩子状态</div>
+        <div class="sub" id="child-status-sub"></div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="env-temp">--°</div>
+        <div class="lbl">温度</div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="env-hum">--%</div>
+        <div class="lbl">湿度</div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="env-lux">--</div>
+        <div class="lbl">光照 lux</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation -->
+  <div class="convo convo-scroll" id="convo" tabindex="0" aria-label="历史对话"></div>
+
+  <!-- Send -->
+  <div class="send-bar">
+    <input id="msg-input" type="text" placeholder="发给机器人说给孩子听..."
+           onkeydown="if(event.key==='Enter')sendMessage()" />
+    <button onclick="sendMessage()">发送</button>
+  </div>
+  <div class="send-ok" id="send-ok">✅ 已发送</div>
+
+</div>
+
+<!-- Page 2: Records -->
+<div class="page" id="page-records">
+
+  <div class="section-title">📖 今日阅读</div>
+  <div class="report-cards" id="reading-stats"></div>
+
+  <div class="section-title">📚 阅读记录</div>
+  <div id="gallery"></div>
+
+  <div class="section-title">📷 历史画面</div>
+  <div class="history-bar">
+    <button onclick="historyPrevDay()">◀</button>
+    <span id="history-date">今天</span>
+    <button onclick="historyNextDay()">▶</button>
+  </div>
+  <div class="history-thumbs" id="history-thumbs"></div>
+  <div class="history-preview" id="history-preview" style="display:none;">
+    <img id="history-preview-img" src="" />
+    <svg id="history-corner-overlay" class="history-corner-overlay" style="display:none;"></svg>
+    <div class="history-preview-info" id="history-preview-info"></div>
+  </div>
+
+  <div class="section-title">📋 今日活动</div>
+  <div class="convo convo-scroll activity-scroll" id="activity-log" tabindex="0" aria-label="今日活动时间线"></div>
+
+</div>
+
+<!-- Page 3: Care -->
+<div class="page" id="page-care">
+
+  <!-- Camera -->
+  <div class="cam" id="cam-box-care">
+    <img id="cam-img-care" src="" style="display:none" />
+    <div class="placeholder" id="cam-placeholder-care">
+      <span class="icon">📷</span>连接后显示监控画面
+    </div>
+    <div class="footer">
+      <span class="time" id="cam-time-care"></span>
+      <span class="time" id="cam-source-care">--</span>
+      <div style="display:flex;gap:4px;">
+        <button onclick="refreshCameraCare()">🔄</button>
+        <button onclick="toggleFullscreenCare()" id="btn-fs-care">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Safety Status -->
+  <div class="section-title">🛡️ 安全状态 <span style="color:var(--muted);font-weight:400;font-size:11px;" id="safety-time"></span></div>
+  <div class="safety-grid" id="safety-grid"></div>
+  <div class="section-title">📌 安全事件记录</div>
+  <div class="care-event-list" id="care-event-list"></div>
+
+  <!-- Sleep Management -->
+  <div class="section-title">🌙 睡眠管理</div>
+  <div class="sleep-row">
+    <label>睡觉时间</label>
+    <input class="sleep-control" type="time" id="bedtime-input" value="21:00" onchange="saveSleepSettings()" />
+    <button onclick="saveSleepSettings()">保存</button>
+    <label class="auto-toggle">
+      <input type="checkbox" id="auto-aid" onchange="saveSleepSettings()" checked />
+      到点自动助眠
+    </label>
+  </div>
+  <div class="sleep-row">
+    <label>孩子名单</label>
+    <div class="checkbox-list" id="sleep-children-list"></div>
+    <input class="sleep-control" type="text" id="sleep-children-input"
+           placeholder="unique_name，用逗号分隔" onchange="saveSleepSettings()" />
+  </div>
+  <div class="sleep-row">
+    <label>宽限时间</label>
+    <input class="sleep-control" type="number" id="sleep-grace-input" value="10"
+           min="0" max="180" onchange="saveSleepSettings()" inputmode="numeric" />
+    <span style="font-size:12px;color:var(--dim);">分钟</span>
+  </div>
+  <div class="sleep-state awake" id="sleep-state">🛏️ 未到睡觉时间</div>
+  <div class="sleep-presence-debug" id="sleep-presence-debug">等待睡眠 presence 上报状态...</div>
+
+  <!-- 助眠设置行 -->
+  <div class="sleep-row">
+    <label>助眠类型</label>
+    <select class="sleep-control" id="aid-type" onchange="saveSleepSettings()">
+      <option value="whitenoise">白噪音</option>
+      <option value="music">轻音乐</option>
+      <option value="story">睡前故事</option>
+    </select>
+  </div>
+  <div class="sleep-row" style="margin-bottom:8px;">
+    <label>助眠时长</label>
+  </div>
+  <div class="sleep-duration-row">
+    <label class="duration-field">
+      <input type="number" id="aid-duration-min" value="20" min="0" max="120"
+             onchange="saveSleepSettings()" inputmode="numeric" aria-label="助眠分钟" />
+      <span class="duration-unit">分钟</span>
+    </label>
+    <label class="duration-field">
+      <input type="number" id="aid-duration-sec" value="0" min="0" max="59"
+             onchange="saveSleepSettings()" inputmode="numeric" aria-label="助眠秒数" />
+      <span class="duration-unit">秒</span>
+    </label>
+  </div>
+
+  <!-- 助眠模式状态框 -->
+  <div class="aid-box" id="aid-box">
+    <div class="aid-box-header">
+      <span class="aid-box-title">🎵 助眠模式</span>
+      <span class="aid-box-sub" id="aid-box-sub">手动开始助眠模式</span>
+    </div>
+    <div class="aid-box-actions">
+      <button class="btn-aid" onclick="startAid()">▶ 开始</button>
+      <button onclick="stopAid()">⏹ 停止</button>
+    </div>
+  </div>
+
+  <div class="sleep-row sleep-remind-row">
+    <input class="sleep-control sleep-remind-input" type="text" id="sleep-remind-text"
+           value="宝贝，该准备睡觉啦" placeholder="自定义提醒语句" maxlength="60" />
+    <button class="btn-remind" onclick="remindSleep()">🔔 提醒入睡</button>
+  </div>
+</div>
+
+<!-- Page 4: Control -->
+<div class="page" id="page-control">
+  <div class="section-title">🎮 机器人控制</div>
+  <div class="cam" id="cam-box-control">
+    <img id="cam-img-control" src="" style="display:none" />
+    <div class="placeholder" id="cam-placeholder-control">
+      <span class="icon">📷</span>连接后显示控制视角
+    </div>
+    <div class="footer">
+      <span class="time" id="cam-time-control"></span>
+      <span class="time" id="cam-source-control">--</span>
+      <div style="display:flex;gap:4px;">
+        <button onclick="refreshCameraControl()">🔄</button>
+        <button onclick="toggleFullscreenControl()" id="btn-fs-control">⛶</button>
+      </div>
+    </div>
+  </div>
+  <div class="dash-row">
+    <div class="dash-left">
+      <div class="dash-card status-card">
+        <div class="val" id="control-state-val">--</div>
+        <div class="lbl">底盘状态</div>
+        <div class="sub" id="control-state-sub">等待状态</div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="control-topic-val">--</div>
+        <div class="lbl">控制话题</div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="control-resource-val">--</div>
+        <div class="lbl">资源占用</div>
+        <div class="sub" id="control-resource-sub">等待资源状态</div>
+      </div>
+      <div class="dash-card">
+        <div class="val" id="control-child-val">--</div>
+        <div class="lbl">孩子名单</div>
+        <div class="sub" id="control-child-sub">等待睡眠配置</div>
+      </div>
+    </div>
+    <div class="dash-right">
+      <div class="dpad control-dpad">
+        <button class="up" data-direction="forward" aria-label="向前">▲</button>
+        <button class="left" data-direction="left" aria-label="向左">◀</button>
+        <button class="right" data-direction="right" aria-label="向右">▶</button>
+        <button class="down" data-direction="backward" aria-label="向后">▼</button>
+      </div>
+      <div class="dash-acts">
+        <button class="btn-find" onclick="findChild()">📍 找孩子</button>
+        <button class="btn-stop" onclick="emergencyStop()">🛑 急停</button>
+      </div>
+    </div>
+  </div>
+  <div class="section-title">🧩 功能状态</div>
+  <div class="safety-grid" id="feature-grid"></div>
+</div>
+
+<!-- Page 5: People -->
+<div class="page" id="page-people">
+  <div class="section-title">👤 人物数据库</div>
+  <div class="people-actions">
+    <button onclick="loadPeople()">刷新人物</button>
+    <button onclick="capturePeopleFromCamera()">用机器人摄像头录入</button>
+    <label for="people-upload-input">上传图片录入</label>
+    <input id="people-upload-input" type="file" accept="image/*" style="display:none" onchange="uploadPeopleImage(event)" />
+  </div>
+  <div class="people-status" id="people-status">等待加载人物数据</div>
+  <div class="people-grid" id="people-list"></div>
+
+  <div class="section-title">待命名人脸</div>
+  <div class="people-status" id="people-candidate-status">上传或拍摄图片后，会在这里显示未录入的人脸。</div>
+  <div class="people-grid" id="people-candidates"></div>
+</div>
+</main>
+
+<!-- Tab Bar -->
+<nav>
+  <button class="active" id="tab-live" onclick="switchPage('live')">
+    <span class="tab-icon">🏠</span>首页
+  </button>
+  <button id="tab-records" onclick="switchPage('records')">
+    <span class="tab-icon">📋</span>记录
+  </button>
+  <button id="tab-care" onclick="switchPage('care')">
+    <span class="tab-icon">🛡️</span>看护
+  </button>
+  <button id="tab-control" onclick="switchPage('control')">
+    <span class="tab-icon">🎮</span>控制
+  </button>
+  <button id="tab-people" onclick="switchPage('people')">
+    <span class="tab-icon">👤</span>人物
+  </button>
+</nav>
+
+<!-- Find Child Modal -->
+<div class="modal-backdrop" id="find-child-modal">
+  <div class="modal-panel">
+    <div class="modal-title">选择寻找目标</div>
+    <div class="checkbox-list" id="find-child-options"></div>
+    <div class="people-status" id="find-child-status">未开始</div>
+    <div class="modal-actions">
+      <button onclick="closeFindChildModal()">取消</button>
+      <button class="primary" onclick="startFindChildWithSelection()">开始寻找</button>
+      <button onclick="stopPersonTask()">停止</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lclose">&times;</span>
+  <img id="lightbox-img" src="" />
+</div>
+
+<script src="./client_state.js"></script>
+<script>
+// ===================================================================
+//  API 配置 — 连接板端时改 USE_MOCK 和 BASE_URL
+// ===================================================================
+const API = {
+  BASE_URL: 'http://192.168.1.113:8080',
+  USE_MOCK: false,
+};
+const CLIENT = window.DashboardClientState || {
+  REFRESH_POLICY: {
+    cameraFrameMs: 67,
+    liveStatusMs: 15000,
+    liveEnvMs: 10000,
+    liveAlertsMs: 15000,
+    careCameraMs: 67,
+    careSafetyMs: 3000,
+    careAlertsMs: 3000,
+    careSleepMs: 3000,
+    controlCameraMs: 67,
+    controlStatusMs: 3000,
+  },
+  createPersistentAlertTracker: (storage, storageKey) => {
+    const memory = new Set();
+    const key = storageKey || 'alerts_seen';
+    try {
+      const raw = storage?.getItem?.(key);
+      JSON.parse(raw || '[]').forEach(item => memory.add(String(item)));
+    } catch (e) {}
+    const save = () => {
+      try { storage?.setItem?.(key, JSON.stringify(Array.from(memory))); } catch (e) {}
+    };
+    return {
+      has: id => memory.has(String(id || '')),
+      mark: id => {
+        const token = String(id || '').trim();
+        if (!token || memory.has(token)) return false;
+        memory.add(token);
+        save();
+        return true;
+      },
+      clear: () => {
+        memory.clear();
+        save();
+      },
+    };
+  },
+  shouldBootDashboard: readyState => String(readyState || '').toLowerCase() !== 'loading',
+  buildFindTargetPeople: (people, sleepChildren) => {
+    const source = Array.isArray(people) ? people : [];
+    const children = Array.isArray(sleepChildren) ? sleepChildren.map(name => String(name || '').trim()).filter(Boolean) : [];
+    if (!source.length && !children.length) return [{unique_name:'nearest', display_name:'最近的人'}];
+    const seen = new Set();
+    const byName = new Map(source.map(person => [String(person?.unique_name || person?.person_id || person?.display_name || '').trim(), person]));
+    const result = [];
+    const add = person => {
+      const uniqueName = String(person?.unique_name || person?.person_id || person?.display_name || '').trim();
+      if (!uniqueName || seen.has(uniqueName)) return;
+      seen.add(uniqueName);
+      result.push({
+        unique_name: uniqueName,
+        display_name: String(person?.display_name || person?.unique_name || person?.person_id || uniqueName).trim(),
+      });
+    };
+    children.forEach(name => add(byName.get(name) || {unique_name:name, display_name:name}));
+    source.forEach(add);
+    return result.length ? result : [{unique_name:'nearest', display_name:'最近的人'}];
+  },
+  describeFindChildTaskStatus: (data, state) => {
+    const status = data || {};
+    if (status.active) return {text:`正在寻找 ${status.target || ''} · 剩余 ${status.remaining_sec ?? '--'} 秒`, autoClose:false, hasObservedActive:true};
+    if (status.stopped_reason === 'arrived' && state?.hasObservedActive) return {text:'已找到目标', autoClose:true, hasObservedActive:false};
+    const reason = status.stopped_reason ? ` · ${status.stopped_reason}` : '';
+    return {text:`未运行${reason}`, autoClose:false, hasObservedActive:false};
+  },
+  formatLocalDateKey: d => {
+    const date = d || new Date();
+    const pad2 = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+  },
+  historyDateLabel: (dateKey, todayKey = new Date().toISOString().slice(0,10)) => {
+    const current = String(dateKey || '').slice(0, 10);
+    if (current === todayKey) return '今天';
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (current === yesterday) return '昨天';
+    return current;
+  },
+  shiftDateKey: (dateKey, deltaDays, todayKey = new Date().toISOString().slice(0,10)) => {
+    const current = dateKey ? new Date(`${String(dateKey).slice(0,10)}T00:00:00`) : new Date(`${todayKey}T00:00:00`);
+    const next = new Date(current.getTime() + Number(deltaDays || 0) * 86400000);
+    const today = new Date(`${todayKey}T00:00:00`);
+    if (next > today) return todayKey;
+    return next.toISOString().slice(0, 10);
+  },
+};
+
+const ENDPOINTS = {
+  health: '/api/health',
+  cameraSnapshot: '/api/camera/snapshot',
+  cameraSource: '/api/camera/source',
+  cameraHistory: date => `/api/camera/history?date=${date}`,
+  cameraHistoryImage: path => `/api/camera/history/image/${encodeHistoryPath(path)}`,
+  childStatus: '/api/child/status',
+  environment: '/api/environment',
+  conversation: '/api/conversation/summary',
+  dashboardTimeline: '/api/dashboard/timeline?limit=120',
+  readingReport: '/api/reading/report',
+  readingRecords: '/api/reading/records',
+  activity: '/api/activity',
+  alerts: '/api/alerts',
+  move: '/api/move',
+  findChild: '/api/move/find-child',
+  emergencyStop: '/api/move/emergency-stop',
+  people: '/api/people',
+  peopleUploadCandidates: '/api/people/candidates/upload',
+  peopleCaptureCandidates: '/api/people/candidates/capture',
+  peopleEnroll: '/api/people/enroll',
+  peopleDelete: '/api/people/delete',
+  personTaskSeek: '/api/person-task/seek',
+  personTaskStop: '/api/person-task/stop',
+  personTaskStatus: '/api/person-task/status',
+  sendMessage: '/api/message/send',
+  safetyStatus: '/api/safety/status',
+  systemMode: '/api/system/mode',
+  systemFeatures: '/api/system/features',
+  systemResources: '/api/system/resources',
+  systemConflicts: '/api/system/conflicts',
+  sleepStatus: '/api/sleep/status',
+  sleepChildren: '/api/sleep/children',
+  sleepSettings: '/api/sleep/settings',
+  sleepPresence: '/api/sleep/presence',
+  sleepAidStart: '/api/sleep/aid/start',
+  sleepAidStop: '/api/sleep/aid/stop',
+  sleepRemind: '/api/sleep/remind',
+};
+
+const RESERVED_FEATURES = {
+  cameraHistory: true,
+  realtimeSocket: {
+    enabled: false,
+    path: '/ws/realtime',
+  },
+};
+
+function encodeHistoryPath(path) {
+  return String(path || '').split('/').map(encodeURIComponent).join('/');
+}
+
+async function get(path) {
+  if (API.USE_MOCK) return null;
+  try {
+    const r = await fetch(API.BASE_URL + path, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new Error(`${r.status}`);
+    const ct = r.headers.get('content-type')||'';
+    return ct.includes('image') ? await r.blob() : await r.json();
+  } catch(e) { console.warn(path, e.message); return null; }
+}
+
+async function post(path, body) {
+  if (API.USE_MOCK) { console.log('mock POST', path, body); return {ok:true}; }
+  try {
+    const r = await fetch(API.BASE_URL + path, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body || {}), signal: AbortSignal.timeout(5000),
+    });
+    return await r.json();
+  } catch(e) { return {ok:false, error:e.message}; }
+}
+
+// ===================================================================
+//  模拟数据
+// ===================================================================
+const M = {
+  child: { status:'playing', since:'14:30', detail:'已玩耍 25 分钟' },
+  env: { temperature:26.5, humidity:55.0, light:320, temp_warn:false, light_warn:true },
+  reading: { books_read:3, pages_total:38, minutes:42 },
+  records: {
+    '今天': { '好饿的毛毛虫':12, '猜猜我有多爱你':8 },
+    '昨天': { '小王子':15, '大卫不可以':10 },
+  },
+  convo: [
+    {type:'child',time:'14:20',text:'小智，今天外面好热呀'},
+    {type:'robot',time:'14:20',text:'是呀，现在室内温度是26.5°C，你要多喝水哦'},
+    {type:'child',time:'14:05',text:'给我讲个故事吧'},
+    {type:'robot',time:'14:06',text:'好的，我来给你讲一个关于小狐狸的童话故事...'},
+    {type:'child',time:'13:30',text:'你好小智'},
+    {type:'robot',time:'13:30',text:'你好呀！想听故事还是读绘本呢？'},
+  ],
+  activity: [
+    {type:'info',time:'14:30',text:'孩子开始玩耍'},
+    {type:'info',time:'14:06',text:'机器人在讲《小狐狸》故事'},
+    {type:'info',time:'14:00',text:'进入读书模式 —《好饿的毛毛虫》'},
+    {type:'warn',time:'13:15',text:'⚠️ 光线偏暗（280 lux）'},
+    {type:'info',time:'11:00',text:'孩子离开机器人视线'},
+  ],
+  alerts: [
+    {type:'warn', text:'光线偏暗（280 lux），建议开灯保护眼睛', time:'13:15'},
+  ],
+};
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function formatDatePart(date) {
+  return `${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function formatDateTime(date = new Date()) {
+  return `${formatDatePart(date)} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function formatDisplayTime(value, fallbackDate = new Date()) {
+  if (!value) return formatDateTime(fallbackDate);
+  if (value instanceof Date) return formatDateTime(value);
+
+  const text = String(value).trim();
+  if (/^\d{2}-\d{2}\s+\d{1,2}:\d{2}/.test(text)) return text.replace(/^(\d{2}-\d{2})\s+(\d):/, '$1 0$2:').slice(0, 11);
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    const parsed = new Date(text.replace(' ', 'T'));
+    if (!Number.isNaN(parsed.getTime())) return formatDateTime(parsed);
+    return text.slice(5, 16);
+  }
+  if (/^\d{1,2}:\d{2}/.test(text)) {
+    const [h, m] = text.split(':');
+    return `${formatDatePart(fallbackDate)} ${pad2(h)}:${m.slice(0,2)}`;
+  }
+  return text;
+}
+
+function parseMessageTime(value, fallbackDate = new Date()) {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+
+  const text = String(value).trim();
+  const fullDate = new Date(text.replace(' ', 'T'));
+  if (!Number.isNaN(fullDate.getTime())) return fullDate.getTime();
+
+  const shortDate = text.match(/^(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})/);
+  if (shortDate) {
+    return new Date(
+      fallbackDate.getFullYear(),
+      Number(shortDate[1]) - 1,
+      Number(shortDate[2]),
+      Number(shortDate[3]),
+      Number(shortDate[4])
+    ).getTime();
+  }
+
+  const timeOnly = text.match(/^(\d{1,2}):(\d{2})/);
+  if (timeOnly) {
+    return new Date(
+      fallbackDate.getFullYear(),
+      fallbackDate.getMonth(),
+      fallbackDate.getDate(),
+      Number(timeOnly[1]),
+      Number(timeOnly[2])
+    ).getTime();
+  }
+
+  return 0;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  }[ch]));
+}
+
+function scrollToBottom(box) {
+  if (!box) return;
+  requestAnimationFrame(() => {
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+// ===================================================================
+//  页面切换
+// ===================================================================
+let currentPage = 'live';
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  currentPage = name;
+  startPageRefresh(name);
+}
+
+// ===================================================================
+//  摄像头
+// ===================================================================
+let autoTimer = null;
+let pageTimers = [];
+const cameraSlots = {
+  live: {
+    img: 'cam-img',
+    placeholder: 'cam-placeholder',
+    time: 'cam-time',
+    source: 'cam-source',
+    emptyText: '连接后显示实时画面',
+  },
+  care: {
+    img: 'cam-img-care',
+    placeholder: 'cam-placeholder-care',
+    time: 'cam-time-care',
+    source: 'cam-source-care',
+    emptyText: '连接后显示监控画面',
+  },
+  control: {
+    img: 'cam-img-control',
+    placeholder: 'cam-placeholder-control',
+    time: 'cam-time-control',
+    source: 'cam-source-control',
+    emptyText: '连接后显示控制视角',
+  },
+};
+const cameraInflight = {};
+
+function cameraSourceLabel(data) {
+  if (!data) return '画面源: --';
+  return `画面源: ${data.label || data.source || '--'}`;
+}
+
+async function refreshCameraSource() {
+  const data = await get(ENDPOINTS.cameraSource);
+  const label = cameraSourceLabel(data);
+  Object.values(cameraSlots).forEach(slot => {
+    const el = document.getElementById(slot.source);
+    if (el) el.textContent = label;
+  });
+}
+
+async function refreshCameraSlot(slotName) {
+  const slot = cameraSlots[slotName];
+  if (!slot || cameraInflight[slotName] || activeMoveDirection !== 'stop') return;
+  const img = document.getElementById(slot.img);
+  const ph  = document.getElementById(slot.placeholder);
+  const tl  = document.getElementById(slot.time);
+  if (!img || !ph || !tl) return;
+  cameraInflight[slotName] = true;
+  try {
+    const blob = await get(ENDPOINTS.cameraSnapshot);
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      img.onload = () => URL.revokeObjectURL(url);
+      img.src = url;
+      img.style.display = '';
+      ph.style.display = 'none';
+      tl.textContent = formatDisplayTime(new Date());
+    } else if (API.USE_MOCK) {
+      img.style.display = 'none';
+      ph.style.display = '';
+      ph.innerHTML = `<span class="icon">📷</span>${slot.emptyText}`;
+    }
+  } finally {
+    cameraInflight[slotName] = false;
+  }
+}
+
+function refreshCamera() { return refreshCameraSlot('live'); }
+function refreshCameraCare() { return refreshCameraSlot('care'); }
+function refreshCameraControl() { return refreshCameraSlot('control'); }
+
+function toggleFullscreen() {
+  const cam = document.getElementById('cam-box');
+  const btn = document.getElementById('btn-fs');
+  if (cam.classList.contains('fullscreen')) {
+    cam.classList.remove('fullscreen');
+    btn.textContent = '⛶';
+  } else {
+    cam.classList.add('fullscreen');
+    btn.textContent = '✕';
+  }
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  refreshCamera();
+  refreshCameraSource();
+  autoTimer = setInterval(refreshCamera, CLIENT.REFRESH_POLICY.cameraFrameMs);
+}
+function stopAutoRefresh() { if(autoTimer){clearInterval(autoTimer);autoTimer=null;} }
+
+function addPageTimer(fn, intervalMs) {
+  pageTimers.push(setInterval(fn, intervalMs));
+}
+
+function stopPageRefresh() {
+  stopAutoRefresh();
+  pageTimers.forEach(id => clearInterval(id));
+  pageTimers = [];
+}
+
+function startPageRefresh(name) {
+  stopPageRefresh();
+
+  if (name === 'live') {
+    startAutoRefresh();
+    refreshCameraSource();
+    updateStatus();
+    updateEnv();
+    updateConvo();
+    checkAlerts();
+    addPageTimer(updateStatus, CLIENT.REFRESH_POLICY.liveStatusMs);
+    addPageTimer(updateEnv, CLIENT.REFRESH_POLICY.liveEnvMs);
+    addPageTimer(refreshCameraSource, CLIENT.REFRESH_POLICY.liveStatusMs);
+    addPageTimer(checkAlerts, CLIENT.REFRESH_POLICY.liveAlertsMs);
+    return;
+  }
+
+  if (name === 'records') {
+    updateReading();
+    updateGallery();
+    updateActivity();
+    loadHistory();
+    return;
+  }
+
+  if (name === 'care') {
+    refreshCameraCare();
+    refreshCameraSource();
+    updateSafety();
+    updateCareEvents();
+    loadSleepSettings();
+    checkAlerts();
+    addPageTimer(refreshCameraCare, CLIENT.REFRESH_POLICY.cameraFrameMs);
+    addPageTimer(refreshCameraSource, CLIENT.REFRESH_POLICY.careSafetyMs);
+    addPageTimer(updateSafety, CLIENT.REFRESH_POLICY.careSafetyMs);
+    addPageTimer(updateCareEvents, CLIENT.REFRESH_POLICY.careSafetyMs);
+    addPageTimer(loadSleepSettings, CLIENT.REFRESH_POLICY.careSleepMs);
+    addPageTimer(checkAlerts, CLIENT.REFRESH_POLICY.careAlertsMs);
+    return;
+  }
+
+  if (name === 'control') {
+    refreshCameraControl();
+    refreshCameraSource();
+    updateControlStatus();
+    addPageTimer(refreshCameraControl, CLIENT.REFRESH_POLICY.controlCameraMs);
+    addPageTimer(refreshCameraSource, CLIENT.REFRESH_POLICY.controlStatusMs);
+    addPageTimer(updateControlStatus, CLIENT.REFRESH_POLICY.controlStatusMs);
+    addPageTimer(updatePersonTaskStatus, 1000);
+    return;
+  }
+
+  if (name === 'people') {
+    loadPeople();
+  }
+}
+
+// ===================================================================
+//  移动
+// ===================================================================
+let activeMoveDirection = 'stop';
+const MOVE_COMMAND_INTERVAL_MS = 500;
+let moveRepeatTimer = null;
+let movementManualAllowed = true;
+let moveInFlight = false;
+let pendingMoveDirection = '';
+let lastQueuedMoveDirection = 'stop';
+
+function setMovementButtonsEnabled(enabled) {
+  movementManualAllowed = Boolean(enabled);
+  document.querySelectorAll('.dpad button[data-direction]').forEach(btn => {
+    btn.disabled = !movementManualAllowed;
+    btn.setAttribute('aria-disabled', String(!movementManualAllowed));
+    if (!movementManualAllowed) btn.classList.remove('is-pressed');
+  });
+  if (!movementManualAllowed) stopMove();
+}
+
+function sendMove(direction, options = {}) {
+  const force = Boolean(options.force);
+  if (!force && direction === activeMoveDirection) return;
+  if (direction !== 'stop' && !movementManualAllowed) return;
+  activeMoveDirection = direction;
+  queueMoveCommand(direction);
+}
+
+async function queueMoveCommand(direction) {
+  direction = direction || 'stop';
+  if (moveInFlight) {
+    pendingMoveDirection = direction;
+    return;
+  }
+  moveInFlight = true;
+  lastQueuedMoveDirection = direction;
+  try {
+    await post(ENDPOINTS.move, {direction});
+  } finally {
+    moveInFlight = false;
+    const pending = pendingMoveDirection;
+    pendingMoveDirection = '';
+    if (pending) {
+      queueMoveCommand(pending);
+    }
+  }
+}
+
+function clearMoveRepeat() {
+  if (moveRepeatTimer) {
+    clearInterval(moveRepeatTimer);
+    moveRepeatTimer = null;
+  }
+}
+
+function startMoveRepeat(direction) {
+  clearMoveRepeat();
+  sendMove(direction, {force: true});
+  moveRepeatTimer = setInterval(() => {
+    sendMove(direction, {force: true});
+  }, MOVE_COMMAND_INTERVAL_MS);
+}
+
+function stopMove() {
+  clearMoveRepeat();
+  if (activeMoveDirection !== 'stop') sendMove('stop', {force: true});
+  document.querySelectorAll('.dpad button').forEach(btn=>btn.classList.remove('is-pressed'));
+}
+
+function move(dir) { sendMove(dir, {force: true}); }
+
+function bindMovementControls() {
+  document.querySelectorAll('.dpad button[data-direction]').forEach(btn => {
+    const direction = btn.dataset.direction;
+
+    btn.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      if (!movementManualAllowed || btn.disabled) return;
+      btn.setPointerCapture?.(event.pointerId);
+      btn.classList.add('is-pressed');
+      startMoveRepeat(direction);
+    });
+
+    const release = event => {
+      event.preventDefault();
+      try {
+        if (btn.hasPointerCapture?.(event.pointerId)) btn.releasePointerCapture(event.pointerId);
+      } catch (e) {}
+      stopMove();
+    };
+
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('lostpointercapture', stopMove);
+  });
+
+  window.addEventListener('blur', stopMove);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopMove();
+  });
+}
+
+function findChild() { openFindChildModal(); }
+function emergencyStop() {
+  post(ENDPOINTS.emergencyStop);
+  if(API.USE_MOCK) showToast({type:'warn', text:'急停接口已预留，连接板端后生效', time: nowTime()});
+}
+
+// ===================================================================
+//  人物数据库与寻人
+// ===================================================================
+let peopleCache = [];
+let sleepChildrenCache = [];
+let personTaskStarting = false;
+let findChildAutoCloseTimer = null;
+let findChildHasObservedActive = false;
+const FIND_TARGET_STORAGE_KEY = 'dashboard:lastFindTarget';
+
+function personDisplayName(person) {
+  return String(person?.display_name || person?.unique_name || person?.person_id || '').trim();
+}
+
+function personUniqueName(person) {
+  return String(person?.unique_name || person?.person_id || person?.display_name || '').trim();
+}
+
+async function loadPeople() {
+  const status = document.getElementById('people-status');
+  if (status) status.textContent = '正在加载人物数据...';
+  const data = await get(ENDPOINTS.people);
+  if (!data || data.ok === false) {
+    if (status) status.textContent = `人物服务不可用${data?.error ? ': ' + data.error : ''}`;
+    renderPeopleList([]);
+    renderSleepChildrenCheckboxes();
+    renderFindChildOptions();
+    return [];
+  }
+  peopleCache = Array.isArray(data.people) ? data.people : [];
+  if (status) status.textContent = peopleCache.length ? `已录入 ${peopleCache.length} 人` : '还没有录入人物';
+  renderPeopleList(peopleCache);
+  renderSleepChildrenCheckboxes();
+  renderFindChildOptions();
+  return peopleCache;
+}
+
+function renderPeopleList(people) {
+  const box = document.getElementById('people-list');
+  if (!box) return;
+  if (!people.length) {
+    box.innerHTML = '<div class="people-status">暂无人物。可以上传图片或用机器人摄像头录入。</div>';
+    return;
+  }
+  box.innerHTML = people.map(person => {
+    const uniqueName = personUniqueName(person);
+    const displayName = personDisplayName(person);
+    const count = Number(person.embedding_count || 0);
+    return `<div class="people-card">
+      <div class="people-avatar">${escapeHtml(displayName.slice(0, 1).toUpperCase() || '?')}</div>
+      <div>
+        <div class="people-name">${escapeHtml(displayName)}</div>
+        <div class="people-meta">unique_name: ${escapeHtml(uniqueName)} · 样本 ${count}</div>
+      </div>
+      <button onclick="deletePerson('${escapeHtml(uniqueName)}')">删除</button>
+    </div>`;
+  }).join('');
+}
+
+async function deletePerson(uniqueName) {
+  const name = String(uniqueName || '').trim();
+  if (!name) return;
+  if (!confirm(`删除人物 ${name}？`)) return;
+  const result = await post(ENDPOINTS.peopleDelete, {unique_name: name});
+  showToast({type: result?.ok ? 'info' : 'warn', text: result?.ok ? '人物已删除' : '删除失败', time: nowTime()});
+  await loadPeople();
+}
+
+function imageFileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('read_failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadPeopleImage(event) {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('people-candidate-status');
+  if (status) status.textContent = '正在识别人脸...';
+  try {
+    const image = await imageFileToDataUrl(file);
+    const result = await post(ENDPOINTS.peopleUploadCandidates, {image_b64: image});
+    renderPeopleCandidates(result);
+  } catch (e) {
+    if (status) status.textContent = `读取图片失败: ${e.message || e}`;
+  } finally {
+    if (event?.target) event.target.value = '';
+  }
+}
+
+async function capturePeopleFromCamera() {
+  const status = document.getElementById('people-candidate-status');
+  if (status) status.textContent = '正在从机器人摄像头拍摄并识别人脸...';
+  const result = await post(ENDPOINTS.peopleCaptureCandidates);
+  renderPeopleCandidates(result);
+}
+
+function renderPeopleCandidates(result) {
+  const box = document.getElementById('people-candidates');
+  const status = document.getElementById('people-candidate-status');
+  if (!box || !status) return;
+  const known = Array.isArray(result?.known_faces) ? result.known_faces : [];
+  const candidates = Array.isArray(result?.candidates) ? result.candidates : [];
+  const knownText = known.length ? `已排除已录入人脸: ${known.map(p => p.display_name || p.unique_name).join(', ')}` : '';
+  if (!result || result.ok === false) {
+    status.textContent = `识别失败${result?.error ? ': ' + result.error : ''}`;
+    box.innerHTML = '';
+    return;
+  }
+  status.textContent = candidates.length ? `${knownText} 待命名 ${candidates.length} 张人脸` : (knownText || '没有发现可录入的新人脸');
+  box.innerHTML = candidates.map(candidate => {
+    const id = String(candidate.candidate_id || '');
+    const crop = candidate.crop_jpeg_b64 ? `data:image/jpeg;base64,${candidate.crop_jpeg_b64}` : '';
+    return `<div class="candidate-card">
+      <div class="people-avatar">${crop ? `<img src="${crop}" alt="face crop" />` : '脸'}</div>
+      <div>
+        <input id="candidate-name-${escapeHtml(id)}" placeholder="输入 unique_name" />
+        <div class="people-meta">质量 ${Number(candidate.quality || 0).toFixed(2)} · ${escapeHtml(candidate.source || '')}</div>
+      </div>
+      <button onclick="enrollPersonCandidate('${escapeHtml(id)}')">录入</button>
+    </div>`;
+  }).join('');
+}
+
+async function enrollPersonCandidate(candidateId) {
+  const id = String(candidateId || '');
+  const input = document.getElementById(`candidate-name-${id}`);
+  const uniqueName = String(input?.value || '').trim();
+  if (!uniqueName) {
+    showToast({type:'warn', text:'请先输入名字', time: nowTime()});
+    return;
+  }
+  const result = await post(ENDPOINTS.peopleEnroll, {candidate_id: id, unique_name: uniqueName});
+  showToast({type: result?.ok ? 'info' : 'warn', text: result?.ok ? '人物已录入' : '录入失败', time: nowTime()});
+  if (result?.ok) {
+    const card = input.closest('.candidate-card');
+    if (card) card.remove();
+    await loadPeople();
+  }
+}
+
+function renderSleepChildrenCheckboxes(selected) {
+  const box = document.getElementById('sleep-children-list');
+  const input = document.getElementById('sleep-children-input');
+  if (!box) return;
+  const selectedSet = new Set(selected || String(input?.value || '').split(/[,，]/).map(s => s.trim()).filter(Boolean));
+  if (!peopleCache.length) {
+    box.innerHTML = '<span class="people-status">人物库为空，可暂用下方文本名单。</span>';
+    if (input) input.style.display = '';
+    return;
+  }
+  if (input) input.style.display = 'none';
+  box.innerHTML = peopleCache.map(person => {
+    const uniqueName = personUniqueName(person);
+    const label = personDisplayName(person);
+    const checked = selectedSet.has(uniqueName) ? 'checked' : '';
+    return `<label class="check-pill">
+      <input type="checkbox" class="sleep-child-checkbox" value="${escapeHtml(uniqueName)}" ${checked} onchange="saveSleepSettings()" />
+      ${escapeHtml(label)}
+    </label>`;
+  }).join('');
+}
+
+function collectSelectedSleepChildren() {
+  const boxes = Array.from(document.querySelectorAll('.sleep-child-checkbox'));
+  const input = document.getElementById('sleep-children-input');
+  const selected = boxes.length
+    ? boxes.filter(box => box.checked).map(box => box.value)
+    : String(input?.value || '').split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  if (input) input.value = selected.join(', ');
+  return selected;
+}
+
+async function loadSleepChildrenForFind() {
+  const data = await get(ENDPOINTS.sleepChildren);
+  sleepChildrenCache = Array.isArray(data?.children) ? data.children : [];
+  return sleepChildrenCache;
+}
+
+async function openFindChildModal() {
+  if (findChildAutoCloseTimer) {
+    clearTimeout(findChildAutoCloseTimer);
+    findChildAutoCloseTimer = null;
+  }
+  findChildHasObservedActive = false;
+  const status = document.getElementById('find-child-status');
+  if (status) status.textContent = '正在加载人物名单...';
+  document.getElementById('find-child-modal')?.classList.add('show');
+  await loadPeople();
+  await loadSleepChildrenForFind();
+  renderFindChildOptions();
+  updatePersonTaskStatus();
+}
+
+function closeFindChildModal() {
+  document.getElementById('find-child-modal')?.classList.remove('show');
+}
+
+function renderFindChildOptions() {
+  const box = document.getElementById('find-child-options');
+  if (!box) return;
+  const last = localStorage.getItem(FIND_TARGET_STORAGE_KEY) || '';
+  const people = findTargetPeople();
+  box.innerHTML = people.map((person, index) => {
+    const uniqueName = personUniqueName(person);
+    const label = personDisplayName(person);
+    const checked = (last ? uniqueName === last : index === 0) ? 'checked' : '';
+    return `<label class="check-pill">
+      <input type="radio" name="find-child-target" value="${escapeHtml(uniqueName)}" ${checked} />
+      ${escapeHtml(label)}
+    </label>`;
+  }).join('');
+}
+
+function findTargetPeople() {
+  return CLIENT.buildFindTargetPeople(peopleCache, sleepChildrenCache);
+}
+
+async function startFindChildWithSelection() {
+  if (personTaskStarting) return;
+  const selected = document.querySelector('input[name="find-child-target"]:checked');
+  const target = selected?.value || 'nearest';
+  localStorage.setItem(FIND_TARGET_STORAGE_KEY, target);
+  const status = document.getElementById('find-child-status');
+  if (status) status.textContent = `正在启动寻找 ${target}...`;
+  if (findChildAutoCloseTimer) {
+    clearTimeout(findChildAutoCloseTimer);
+    findChildAutoCloseTimer = null;
+  }
+  personTaskStarting = true;
+  try {
+    const result = await post(ENDPOINTS.personTaskSeek, {target, timeout_sec: 60});
+    showToast({type: result?.ok ? 'info' : 'warn', text: result?.ok ? '开始寻找' : '寻找启动失败', time: nowTime()});
+    await updatePersonTaskStatus();
+  } finally {
+    personTaskStarting = false;
+  }
+}
+
+async function stopPersonTask() {
+  const result = await post(ENDPOINTS.personTaskStop);
+  showToast({type: result?.ok ? 'info' : 'warn', text: result?.ok ? '已停止寻找' : '停止失败', time: nowTime()});
+  await updatePersonTaskStatus();
+}
+
+async function updatePersonTaskStatus() {
+  const data = await get(ENDPOINTS.personTaskStatus);
+  applyFindChildTaskStatus(data);
+}
+
+function applyFindChildTaskStatus(data) {
+  const el = document.getElementById('find-child-status');
+  if (!el || !data) return;
+  const view = CLIENT.describeFindChildTaskStatus(data, {hasObservedActive: findChildHasObservedActive});
+  findChildHasObservedActive = Boolean(view.hasObservedActive);
+  el.textContent = view.text;
+  if (data.active) {
+    if (findChildAutoCloseTimer) {
+      clearTimeout(findChildAutoCloseTimer);
+      findChildAutoCloseTimer = null;
+    }
+  } else if (view.autoClose) {
+    if (!findChildAutoCloseTimer) {
+      findChildAutoCloseTimer = setTimeout(() => {
+        closeFindChildModal();
+        findChildAutoCloseTimer = null;
+      }, 700);
+    }
+  } else {
+    if (findChildAutoCloseTimer) {
+      clearTimeout(findChildAutoCloseTimer);
+      findChildAutoCloseTimer = null;
+    }
+  }
+}
+
+async function updateControlStatus() {
+  const [data, resources, conflicts, sleepChildren, personTask] = await Promise.all([
+    get(ENDPOINTS.systemFeatures),
+    get(ENDPOINTS.systemResources),
+    get(ENDPOINTS.systemConflicts),
+    get(ENDPOINTS.sleepChildren),
+    get(ENDPOINTS.personTaskStatus),
+  ]);
+  applyFindChildTaskStatus(personTask);
+  const features = data || {};
+  const movement = features.movement || {enabled:false, reserved:true, detail:'等待连接'};
+  const manualAllowed = Boolean(movement.enabled && !movement.reserved && movement.manual_allowed !== false);
+  const stateVal = document.getElementById('control-state-val');
+  const stateSub = document.getElementById('control-state-sub');
+  const topicVal = document.getElementById('control-topic-val');
+  const resourceVal = document.getElementById('control-resource-val');
+  const resourceSub = document.getElementById('control-resource-sub');
+  const childVal = document.getElementById('control-child-val');
+  const childSub = document.getElementById('control-child-sub');
+  if (stateVal) stateVal.textContent = movement.reserved ? '预留' : (manualAllowed ? '可用' : '忙碌');
+  if (stateSub) stateSub.textContent = personTask?.active ? `正在寻找 ${personTask.target || ''}` : (movement.detail || movement.status || '');
+  if (topicVal) topicVal.textContent = movement.topic || '/cmd_vel_raw';
+  setMovementButtonsEnabled(manualAllowed);
+  const leases = Array.isArray(resources?.leases) ? resources.leases : [];
+  const conflictList = Array.isArray(conflicts?.conflicts) ? conflicts.conflicts : [];
+  if (resourceVal) resourceVal.textContent = `${leases.length}/${conflictList.length}`;
+  if (resourceSub) resourceSub.textContent = `占用 ${leases.length} · 冲突 ${conflictList.length}`;
+  const children = Array.isArray(sleepChildren?.children) ? sleepChildren.children : [];
+  const visibleChildren = Array.isArray(sleepChildren?.visible_children) ? sleepChildren.visible_children : [];
+  if (childVal) childVal.textContent = children.length ? `${visibleChildren.length}/${children.length}` : '未配置';
+  if (childSub) childSub.textContent = children.length ? children.join(', ') : '睡眠孩子名单未配置';
+
+  const grid = document.getElementById('feature-grid');
+  if (!grid) return;
+  const items = Object.entries(features).map(([key, value]) => {
+    const ok = value && value.enabled && !value.reserved;
+    const title = {
+      movement: '底盘控制',
+      find_child: '寻找孩子',
+      camera_history: '历史画面',
+      sleep_rules: '睡眠规则',
+      abnormal_sound: '异常响动',
+      realtime_socket: '实时通信',
+    }[key] || key;
+    return `<div class="safety-card ${ok ? 'good' : 'ack'}">
+      <div class="s-icon">${ok ? '✅' : '⏳'}</div>
+      <div class="s-label">${escapeHtml(title)}</div>
+      <div class="s-detail">${escapeHtml(value?.detail || value?.status || '')}</div>
+    </div>`;
+  });
+  items.push(`<div class="safety-card ${conflictList.length ? 'warn' : 'good'}">
+      <div class="s-icon">${conflictList.length ? '⚠️' : '✅'}</div>
+      <div class="s-label">资源冲突</div>
+      <div class="s-detail">${conflictList.length ? escapeHtml(`${conflictList.length} 项冲突`) : '无冲突'}</div>
+    </div>`);
+  items.push(`<div class="safety-card ${children.length ? 'good' : 'ack'}">
+      <div class="s-icon">${children.length ? '✅' : '⏳'}</div>
+      <div class="s-label">睡眠孩子名单</div>
+      <div class="s-detail">${escapeHtml(children.length ? children.join(', ') : '未配置')}</div>
+    </div>`);
+  grid.innerHTML = items.join('');
+}
+
+// ===================================================================
+//  数据更新
+// ===================================================================
+async function updateStatus() {
+  let d = await get(ENDPOINTS.childStatus) || M.child;
+  const map = {playing:'🎮 玩耍中', reading:'📖 阅读中', quiet:'😴 安静', away:'🚫 不在视线'};
+  document.getElementById('child-status-val').textContent = map[d.status]||d.status;
+  document.getElementById('child-status-sub').textContent = `自 ${formatDisplayTime(d.since)} · ${d.detail}`;
+}
+
+async function updateEnv() {
+  let d = await get(ENDPOINTS.environment) || M.env;
+  if (Array.isArray(d.errors) && d.errors.includes('not_ready')) {
+    setTimeout(updateEnv, 800);
+    return;
+  }
+  document.getElementById('env-temp').textContent = d.temperature.toFixed(1)+'°';
+  document.getElementById('env-hum').textContent  = d.humidity.toFixed(0)+'%';
+  document.getElementById('env-lux').textContent  = d.light.toFixed(0);
+}
+
+let conversationBase = [];
+let localSentMessages = [];
+
+function getConversationMeta(type) {
+  if (type === 'child') return {className:'child', label:'👶 孩子'};
+  if (type === 'parent') return {className:'parent', label:'👨‍👩‍👧 家长'};
+  return {className:'robot', label:'🤖 小智'};
+}
+
+function getConversationDisplayMeta(message) {
+  if (message.source === 'sleep_remind') {
+    return {className:'parent', label:'🌙 入睡提醒'};
+  }
+  if (message.source === 'parent') {
+    return {className:'parent', label:'📣 家长播报'};
+  }
+  return getConversationMeta(message.type);
+}
+
+function sortConversation(messages) {
+  return messages
+    .map((message, index) => ({message, index}))
+    .sort((a, b) => {
+      const diff = parseMessageTime(a.message.time) - parseMessageTime(b.message.time);
+      return diff || a.index - b.index;
+    })
+    .map(item => item.message);
+}
+
+function renderConversation(messages, shouldScrollToBottom = true) {
+  const box = document.getElementById('convo');
+  box.innerHTML = messages.map(m => {
+    const meta = getConversationDisplayMeta(m);
+    return `
+      <div class="convo-item">
+        <div class="meta ${meta.className}">${meta.label} · ${formatDisplayTime(m.time)}</div>
+        <div class="bubble ${meta.className}">${escapeHtml(m.text)}</div>
+      </div>`;
+  }).join('');
+  if (shouldScrollToBottom) {
+    scrollToBottom(box);
+  }
+}
+
+function mergeConversation(baseMessages, localMessages) {
+  const serverKeys = new Set(baseMessages.map(m => `${m.type}|${m.source || ''}|${m.text}`));
+  const pending = localMessages.filter(m => !serverKeys.has(`${m.type}|${m.source || ''}|${m.text}`));
+  return sortConversation([...baseMessages, ...pending]);
+}
+
+async function updateConvo() {
+  conversationBase = await get(ENDPOINTS.conversation) || M.convo;
+  renderConversation(mergeConversation(conversationBase, localSentMessages));
+}
+
+async function updateSend() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const localMessage = {type:'parent', source:'parent', time: new Date(), text};
+  localSentMessages.push(localMessage);
+  renderConversation(mergeConversation(conversationBase, localSentMessages));
+  await post(ENDPOINTS.sendMessage, {text});
+  input.value = '';
+  const ok = document.getElementById('send-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+}
+function sendMessage() { updateSend(); }
+
+async function updateReading() {
+  let d = await get(ENDPOINTS.readingReport) || M.reading;
+  document.getElementById('reading-stats').innerHTML = `
+    <div class="report-card"><div class="num">${d.books_read}</div><div class="lbl">本书</div></div>
+    <div class="report-card"><div class="num">${d.pages_total}</div><div class="lbl">页</div></div>
+    <div class="report-card"><div class="num">${d.minutes}</div><div class="lbl">分钟</div></div>`;
+}
+
+function readingDateSortValue(label) {
+  const todayKey = CLIENT.formatLocalDateKey(new Date());
+  if (label === '今天') return Date.parse(`${todayKey}T00:00:00`);
+  if (label === '昨天') return Date.parse(`${CLIENT.shiftDateKey(todayKey, -1, todayKey)}T00:00:00`);
+  const parsed = Date.parse(`${String(label || '').slice(0, 10)}T00:00:00`);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortReadingRecords(records) {
+  const rows = [];
+  Object.entries(records || {}).forEach(([date, books]) => {
+    Object.entries(books || {}).forEach(([title, pages]) => {
+      rows.push({date, title, pages: Number(pages || 0)});
+    });
+  });
+  return rows.sort((a, b) => {
+    const diff = readingDateSortValue(a.date) - readingDateSortValue(b.date);
+    return diff || String(a.title).localeCompare(String(b.title), 'zh-Hans-CN');
+  });
+}
+
+async function updateGallery() {
+  let d = await get(ENDPOINTS.readingRecords) || M.records;
+  const gallery = document.getElementById('gallery');
+  const rows = sortReadingRecords(d);
+  if (!rows.length) {
+    gallery.innerHTML = '<span style="color:#444;font-size:13px;">暂无记录</span>';
+    return;
+  }
+  gallery.innerHTML = `<div class="reading-record-list">${rows.map(row => `
+    <div class="reading-record-row" title="${escapeHtml(row.title)} (${row.pages}页)">
+      <div class="reading-record-date">${escapeHtml(row.date)}</div>
+      <div class="reading-record-title">${escapeHtml(row.title)}</div>
+      <div class="reading-record-pages">${row.pages}页</div>
+    </div>`).join('')}</div>`;
+  scrollToBottom(gallery);
+}
+
+async function updateActivity() {
+  let d = await get(ENDPOINTS.dashboardTimeline);
+  if (!d) {
+    const legacy = await get(ENDPOINTS.activity) || M.activity;
+    d = legacy.map(normalizeLegacyActivity);
+  }
+  renderTimeline(d);
+}
+
+function normalizeLegacyActivity(item) {
+  const type = item.type || 'info';
+  return {
+    id: `${item.time || ''}-${item.text || ''}`,
+    ts: item.time,
+    kind: type === 'warn' ? 'safety' : type,
+    level: type === 'warn' ? 'warn' : 'info',
+    actor: 'system',
+    title: type === 'warn' ? '提醒' : '今日活动',
+    text: item.text || '',
+    meta: {type},
+  };
+}
+
+function sortTimeline(items) {
+  return (items || [])
+    .map((item, index) => ({item, index}))
+    .sort((a, b) => {
+      const diff = parseMessageTime(a.item.ts || a.item.time) - parseMessageTime(b.item.ts || b.item.time);
+      return diff || a.index - b.index;
+    })
+    .map(row => row.item);
+}
+
+function timelineKind(item) {
+  return String(item.kind || item.type || 'activity').replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function timelineLevel(item) {
+  return String(item.level || (item.type === 'warn' ? 'warn' : 'info')).replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+function timelineBadge(item) {
+  const kind = timelineKind(item);
+  if (kind === 'conversation') {
+    if (item.actor === 'child') return '孩子';
+    if (item.actor === 'robot') return '小智';
+    return '家长';
+  }
+  if (kind === 'system') return '系统';
+  if (kind === 'parent_action') return '家长';
+  if (kind === 'sleep') return '睡眠';
+  if (kind === 'safety') return '安全';
+  if (kind === 'reading') return '读书';
+  return '活动';
+}
+
+function timelineTitle(item) {
+  if (item.title) return item.title;
+  const kind = timelineKind(item);
+  if (kind === 'conversation') return timelineBadge(item);
+  if (kind === 'system') return '系统状态';
+  return '今日活动';
+}
+
+function renderTimeline(d) {
+  const activityLog = document.getElementById('activity-log');
+  const items = sortTimeline(d);
+  activityLog.innerHTML = items.map(item => {
+    const kind = timelineKind(item);
+    const level = timelineLevel(item);
+    return `
+      <div class="timeline-item kind-${kind} level-${level}">
+        <div class="timeline-time">${formatDisplayTime(item.ts || item.time)}</div>
+        <div class="timeline-main">
+          <div class="timeline-title">${escapeHtml(timelineTitle(item))}</div>
+          <div class="timeline-text">${escapeHtml(item.text || '')}</div>
+        </div>
+        <div class="timeline-badge">${escapeHtml(timelineBadge(item))}</div>
+      </div>`;
+  }).join('');
+  scrollToBottom(activityLog);
+}
+
+// ===================================================================
+//  告警 Toast
+// ===================================================================
+let shownAlerts = new Set();
+let alertTracker = null;
+try {
+  alertTracker = CLIENT.createPersistentAlertTracker(window.localStorage, 'dashboard_seen_alerts_v1');
+} catch (e) {
+  alertTracker = CLIENT.createPersistentAlertTracker(null, 'dashboard_seen_alerts_v1');
+}
+let toastTimer = null;
+function nowTime() {
+  return formatDisplayTime(new Date());
+}
+async function checkAlerts() {
+  let alerts = await get(ENDPOINTS.alerts) || (API.USE_MOCK ? M.alerts : []);
+  if (!alerts || !alerts.length) return;
+  for (const a of alerts) {
+    const key = a.event_id || `${a.text || ''}|${a.time || ''}`;
+    if (alertTracker.mark(`alert:${key}`)) {
+      shownAlerts.add(key);
+      showToast(a);
+      return;
+    }
+  }
+}
+function showToast(a) {
+  const t = document.getElementById('toast');
+  if (toastTimer) clearTimeout(toastTimer);
+  t.className = 'toast '+a.type+' show';
+  document.getElementById('toast-icon').textContent = a.type==='warn'?'⚠️':'ℹ️';
+  document.getElementById('toast-text').textContent = a.text + ' — ' + formatDisplayTime(a.time);
+  toastTimer = setTimeout(dismissToast, 8000);
+}
+function dismissToast() {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = null;
+  document.getElementById('toast').classList.remove('show');
+}
+
+// ===================================================================
+//  连接检查
+// ===================================================================
+async function checkConn() {
+  const h = await get(ENDPOINTS.health);
+  const dot = document.getElementById('conn-dot');
+  const txt = document.getElementById('conn-text');
+  if (h && h.status==='ok') { dot.className='dot'; txt.textContent='在线'; }
+  else if (API.USE_MOCK)   { dot.className='dot mock'; txt.textContent='演示'; }
+  else                      { dot.className='dot off';  txt.textContent='离线'; }
+}
+
+// ===================================================================
+//  历史快照
+// ===================================================================
+let historyDateKey = CLIENT.formatLocalDateKey(new Date());
+let historyData = [];
+let historySelected = -1;
+
+function formatHistoryDate(dateKey) {
+  return CLIENT.historyDateLabel(dateKey, CLIENT.formatLocalDateKey(new Date()));
+}
+
+function renderHistoryReserved(dstr) {
+  historyData = [];
+  historySelected = -1;
+  document.getElementById('history-preview').style.display = 'none';
+  document.getElementById('history-thumbs').innerHTML = `
+    <div class="reserved-panel">
+      <div class="reserved-title">暂未读取到历史画面</div>
+      <div>这里会按日期显示安全事件截图、读书截图，以及带书页角点的阅读画面。演示模式不会生成假快照。</div>
+      <code>GET ${ENDPOINTS.cameraHistory(dstr)}<br>GET /api/camera/history/image/{path}</code>
+      <div>WebSocket 实时通信也已预留：${RESERVED_FEATURES.realtimeSocket.path}（默认关闭）。</div>
+    </div>`;
+}
+
+function renderHistoryEmpty(message) {
+  historyData = [];
+  historySelected = -1;
+  document.getElementById('history-preview').style.display = 'none';
+  document.getElementById('history-thumbs').innerHTML =
+    `<div class="history-empty">📷 ${message}</div>`;
+}
+
+function historyCategory(snapshot) {
+  const path = String(snapshot?.path || '');
+  const reason = String(snapshot?.reason || '');
+  if (path.startsWith('safety/') || reason.includes('跌倒') || reason.includes('安全')) {
+    return {key: 'safety', label: '安全事件'};
+  }
+  if (path.startsWith('reading/') || reason.includes('读书')) {
+    return {key: 'reading', label: '读书截图'};
+  }
+  return {key: 'other', label: '其他画面'};
+}
+
+function renderHistoryThumb(snapshot, index, fallbackDate) {
+  const category = historyCategory(snapshot);
+  const isEvent = category.key === 'safety';
+  return `<div class="thumb${historySelected===index?' active':''}" onclick="selectHistory(${index})"
+           title="${formatDisplayTime(snapshot.time, fallbackDate)} · ${snapshot.reason}"
+           style="${isEvent?'border-color:#e8960c':''}">
+    <span style="font-size:18px;">${isEvent?'📸':'📷'}</span>
+    <span class="th-time">${String(snapshot.time || '').slice(0,5)}</span>
+    <span class="th-reason">${escapeHtml(snapshot.reason || category.label)}</span>
+  </div>`;
+}
+
+function renderHistoryCategoryRows(snapshots, fallbackDate) {
+  const groups = [
+    {key: 'safety', label: '安全事件', items: []},
+    {key: 'reading', label: '读书截图', items: []},
+    {key: 'other', label: '其他画面', items: []},
+  ];
+  const groupByKey = new Map(groups.map(group => [group.key, group]));
+  snapshots.forEach((snapshot, index) => {
+    const category = historyCategory(snapshot);
+    const group = groupByKey.get(category.key) || groupByKey.get('other');
+    group.items.push({snapshot, index});
+  });
+  return groups
+    .filter(group => group.items.length)
+    .map(group => `<div class="history-category-row">
+      <div class="history-category-label">${group.label}</div>
+      <div class="history-category-items">
+        ${group.items.map(item => renderHistoryThumb(item.snapshot, item.index, fallbackDate)).join('')}
+      </div>
+    </div>`)
+    .join('');
+}
+
+async function loadHistory() {
+  const dstr = historyDateKey;
+  const fallbackDate = new Date(`${historyDateKey}T00:00:00`);
+  document.getElementById('history-date').textContent = formatHistoryDate(historyDateKey);
+  historyData = [];
+  historySelected = -1;
+  document.getElementById('history-preview').style.display = 'none';
+
+  if (API.USE_MOCK) {
+    renderHistoryReserved(dstr);
+    return;
+  }
+
+  const data = await get(ENDPOINTS.cameraHistory(dstr));
+  if (!data || !Array.isArray(data.snapshots)) {
+    renderHistoryReserved(dstr);
+    return;
+  }
+  if (!data.snapshots.length) {
+    renderHistoryEmpty('该日期暂无历史画面');
+    return;
+  }
+  historyData = data.snapshots;
+  document.getElementById('history-thumbs').innerHTML = renderHistoryCategoryRows(data.snapshots, fallbackDate);
+}
+
+function selectHistory(i) {
+  if (!historyData[i]) return;
+  historySelected = i;
+  // 刷新缩略图高亮
+  const thumbs = document.querySelectorAll('.history-thumbs .thumb');
+  thumbs.forEach((t,idx)=>t.classList.toggle('active', idx===i));
+  // 显示大图
+  const s = historyData[i];
+  const preview = document.getElementById('history-preview');
+  preview.style.display = 'block';
+  const img = document.getElementById('history-preview-img');
+  renderHistoryCornerOverlay(null);
+  if (s.path) {
+    const src = API.BASE_URL + ENDPOINTS.cameraHistoryImage(s.path);
+    img.onload = () => renderHistoryCornerOverlay(s);
+    img.src = src;
+    img.onclick = () => openLightbox(src);
+    if (img.complete && img.naturalWidth > 0) {
+      renderHistoryCornerOverlay(s);
+    }
+  } else {
+    img.src = '';
+    img.alt = '快照路径待接入';
+    img.onclick = null;
+  }
+  const pageCount = Array.isArray(s.book_pages) ? s.book_pages.length : 0;
+  document.getElementById('history-preview-info').textContent =
+    formatDisplayTime(s.time, new Date(`${historyDateKey}T00:00:00`)) + ' · ' + s.reason
+    + (pageCount ? ` · ${pageCount}页角点` : '');
+}
+
+function renderHistoryCornerOverlay(snapshot) {
+  const svg = document.getElementById('history-corner-overlay');
+  const img = document.getElementById('history-preview-img');
+  if (!svg) return;
+  svg.innerHTML = '';
+  svg.style.display = 'none';
+  const pages = snapshot && Array.isArray(snapshot.book_pages) ? snapshot.book_pages : [];
+  if (!pages.length || !img || !img.naturalWidth || !img.naturalHeight) return;
+  svg.setAttribute('viewBox', `0 0 ${img.naturalWidth} ${img.naturalHeight}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  const ns = 'http://www.w3.org/2000/svg';
+  pages.forEach((page, pageIdx) => {
+    const corners = Array.isArray(page.corners) ? page.corners : [];
+    if (corners.length < 3) return;
+    const points = corners.map(c => `${Number(c.x || 0)},${Number(c.y || 0)}`).join(' ');
+    const polygon = document.createElementNS(ns, 'polygon');
+    polygon.setAttribute('class', 'history-corner-polygon');
+    polygon.setAttribute('points', points);
+    svg.appendChild(polygon);
+    corners.forEach(corner => {
+      const x = Number(corner.x || 0);
+      const y = Number(corner.y || 0);
+      const dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('class', 'history-corner-dot');
+      dot.setAttribute('cx', String(x));
+      dot.setAttribute('cy', String(y));
+      dot.setAttribute('r', '5');
+      svg.appendChild(dot);
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('class', 'history-corner-label');
+      label.setAttribute('x', String(x + 8));
+      label.setAttribute('y', String(y - 8));
+      label.textContent = `${pageIdx + 1}.${corner.name || ''}`;
+      svg.appendChild(label);
+    });
+  });
+  if (svg.childNodes.length) svg.style.display = 'block';
+}
+
+function historyPrevDay() {
+  historyDateKey = CLIENT.shiftDateKey(historyDateKey, -1, CLIENT.formatLocalDateKey(new Date()));
+  loadHistory();
+}
+function historyNextDay() {
+  historyDateKey = CLIENT.shiftDateKey(historyDateKey, 1, CLIENT.formatLocalDateKey(new Date()));
+  loadHistory();
+}
+// ===================================================================
+//  看护页
+// ===================================================================
+function toggleFullscreenCare() {
+  const cam = document.getElementById('cam-box-care');
+  const btn = document.getElementById('btn-fs-care');
+  if (cam.classList.contains('fullscreen')) {
+    cam.classList.remove('fullscreen'); btn.textContent = '⛶';
+  } else {
+    cam.classList.add('fullscreen'); btn.textContent = '✕';
+  }
+}
+
+function toggleFullscreenControl() {
+  const cam = document.getElementById('cam-box-control');
+  const btn = document.getElementById('btn-fs-control');
+  if (cam.classList.contains('fullscreen')) {
+    cam.classList.remove('fullscreen'); btn.textContent = '⛶';
+  } else {
+    cam.classList.add('fullscreen'); btn.textContent = '✕';
+  }
+}
+
+// 安全状态 mock
+const MOCK_SAFETY = {
+  fall:           { ok: true,  detail: '' },
+  abnormal_sound: { ok: true,  detail: '' },
+  dangerous_item: { ok: false, detail: '', time: '14:28' },
+  in_sight:       { ok: true,  detail: '' },
+};
+
+const acknowledgedSafety = new Set();
+
+function safetyTimeText(time) {
+  return time ? ' · ' + formatDisplayTime(time) : '';
+}
+
+function safetyEventId(key, status) {
+  return `${key}:${status?.time || 'current'}`;
+}
+
+function isSafetyAcknowledged(key, status) {
+  return key === 'dangerous_item' && acknowledgedSafety.has(safetyEventId(key, status));
+}
+
+function acknowledgeSafety(encodedId) {
+  acknowledgedSafety.add(decodeURIComponent(encodedId));
+  updateSafety();
+  showToast({type:'info', text:'已确认检查', time: nowTime()});
+}
+
+async function updateSafety() {
+  let d = await get(ENDPOINTS.safetyStatus) || (API.USE_MOCK ? MOCK_SAFETY : null);
+  if (!d) return;
+  document.getElementById('safety-time').textContent = '更新 ' + formatDisplayTime(new Date());
+
+  const items = [
+    { key:'fall', icon:'🚶', label:'跌倒检测', okIcon:'✅', okText:'无跌倒',    warnIcon:'🚨', warnText:'检测到跌倒' },
+    { key:'abnormal_sound', icon:'🔊', label:'异常响动', okIcon:'✅', okText:'无异常响动', warnIcon:'🔊', warnText:'检测到异常响动' },
+    { key:'dangerous_item', icon:'⚠️', label:'物品提醒', okIcon:'✅', okText:'未发现异常', warnIcon:'⚠️', warnText:'发现需关注物品' },
+    { key:'in_sight', icon:'👤', label:'视野范围', okIcon:'✅', okText:'在视野内',  warnIcon:'👤', warnText:'离开视野' },
+  ];
+
+  document.getElementById('safety-grid').innerHTML = items.map(it => {
+    const s = d[it.key];
+    const ok = s.ok;
+    const acknowledged = !ok && isSafetyAcknowledged(it.key, s);
+    const cardClass = ok ? 'good' : (acknowledged ? 'ack' : 'warn');
+    const detail = ok ? it.okText : (acknowledged ? '家长已检查' : (it.warnText + safetyTimeText(s.time)));
+    const icon = ok ? it.okIcon : (acknowledged ? '✅' : it.warnIcon);
+    const ackButton = (!ok && it.key === 'dangerous_item' && !acknowledged)
+      ? `<button class="safety-ack-btn" onclick="acknowledgeSafety('${encodeURIComponent(safetyEventId(it.key, s))}')">确定已检查</button>`
+      : '';
+    return `<div class="safety-card ${cardClass}">
+      <div class="s-icon">${icon}</div>
+      <div class="s-label">${escapeHtml(it.label)}</div>
+      <div class="s-detail">${escapeHtml(detail)}</div>
+      ${ackButton}
+    </div>`;
+  }).join('');
+
+  // Toast on new danger
+  for (const it of items) {
+    const s = d[it.key];
+    if (!s.ok && !isSafetyAcknowledged(it.key, s)) {
+      const key = `safety:${it.key}:${s.event_id || s.time || ''}`;
+      if (alertTracker.mark(key)) {
+        shownAlerts.add(key);
+        showToast({ type:'warn', text: it.warnText, time:s.time||nowTime() });
+      }
+    }
+  }
+}
+
+async function updateCareEvents() {
+  const list = document.getElementById('care-event-list');
+  if (!list) return;
+  const today = CLIENT.formatLocalDateKey(new Date());
+  const data = await get(ENDPOINTS.cameraHistory(today));
+  const snapshots = Array.isArray(data?.snapshots) ? data.snapshots : [];
+  const events = snapshots.filter(snapshot => historyCategory(snapshot).key === 'safety').slice(0, 8);
+  if (!events.length) {
+    list.innerHTML = '<div class="history-empty">暂无安全事件图片</div>';
+    return;
+  }
+  list.innerHTML = events.map(snapshot => {
+    const src = snapshot.path ? API.BASE_URL + ENDPOINTS.cameraHistoryImage(snapshot.path) : '';
+    const open = src ? `openLightbox('${src}')` : '';
+    return `<div class="care-event-row">
+      ${src ? `<img src="${src}" alt="${escapeHtml(snapshot.reason || '安全事件')}" onclick="${open}" />` : '<div></div>'}
+      <div class="care-event-main">
+        <div class="care-event-title">${escapeHtml(snapshot.reason || '安全事件')}</div>
+        <div class="care-event-meta">${escapeHtml(formatDisplayTime(snapshot.time, new Date(`${today}T00:00:00`)))}</div>
+      </div>
+      <button class="care-event-open" ${src ? `onclick="${open}"` : 'disabled'}>查看</button>
+    </div>`;
+  }).join('');
+}
+
+// 睡眠 mock
+const MOCK_SLEEP = {
+  bedtime: '21:00',
+  state: 'awake',  // awake | sleeping | restless
+  since: '',
+  aid_type: 'whitenoise',
+  aid_duration_min: 20,
+  aid_duration_sec: 1200,
+  aid_active: false,
+  auto_aid: true,
+  remind_text: '宝贝，该准备睡觉啦',
+};
+
+let aidCountdownTimer = null;
+let aidEndsAt = null;
+
+function clampNumber(value, min, max) {
+  const n = Number.parseInt(value, 10);
+  if (Number.isNaN(n)) return min;
+  return Math.min(max, Math.max(min, n));
+}
+
+function formatDuration(totalSeconds) {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${minutes} 分钟 ${seconds} 秒`;
+}
+
+function setAidDurationInputs(totalSeconds) {
+  const safeSeconds = Math.max(1, Math.floor(totalSeconds || 1200));
+  document.getElementById('aid-duration-min').value = String(Math.floor(safeSeconds / 60));
+  document.getElementById('aid-duration-sec').value = String(safeSeconds % 60);
+}
+
+function getAidDurationSeconds() {
+  const minutes = clampNumber(document.getElementById('aid-duration-min').value, 0, 120);
+  const seconds = clampNumber(document.getElementById('aid-duration-sec').value, 0, 59);
+  const total = minutes * 60 + seconds;
+  return Math.min(7200, Math.max(1, total));
+}
+
+function getAidDurationMinutes() {
+  return Math.ceil(getAidDurationSeconds() / 60);
+}
+
+function renderAidCountdown(remainingSeconds) {
+  document.getElementById('aid-box-sub').innerHTML =
+    `助眠计时中 · 剩余 <span class="aid-countdown">${formatDuration(remainingSeconds)}</span>`;
+}
+
+function sleepAidRemainingSeconds(d) {
+  const apiRemaining = Number(d.aid_remaining_sec);
+  if (Number.isFinite(apiRemaining)) return Math.max(0, Math.ceil(apiRemaining));
+  const durationSec = Number(d.aid_duration_sec);
+  if (Number.isFinite(durationSec) && durationSec > 0) return Math.ceil(durationSec);
+  const durationMin = Number(d.aid_duration_min);
+  if (Number.isFinite(durationMin) && durationMin > 0) return Math.ceil(durationMin * 60);
+  return 1200;
+}
+
+function stopAidCountdown() {
+  if (aidCountdownTimer) clearInterval(aidCountdownTimer);
+  aidCountdownTimer = null;
+  aidEndsAt = null;
+}
+
+function startAidCountdown(totalSeconds) {
+  stopAidCountdown();
+  aidEndsAt = Date.now() + totalSeconds * 1000;
+
+  const tick = () => {
+    const remaining = Math.max(0, Math.ceil((aidEndsAt - Date.now()) / 1000));
+    if (remaining <= 0) {
+      stopAidCountdown();
+      if (API.USE_MOCK) MOCK_SLEEP.aid_active = false;
+      const box = document.getElementById('aid-box');
+      box.classList.remove('active');
+      document.getElementById('aid-box-sub').textContent = '助眠已结束';
+      showToast({type:'info', text:'助眠模式已结束', time: nowTime()});
+      return;
+    }
+    renderAidCountdown(remaining);
+  };
+
+  tick();
+  aidCountdownTimer = setInterval(tick, 1000);
+}
+
+async function loadSleepSettings() {
+  let d = await get(ENDPOINTS.sleepStatus) || (API.USE_MOCK ? MOCK_SLEEP : null);
+  if (!d) return;
+  if (!peopleCache.length) await loadPeople();
+  document.getElementById('bedtime-input').value = d.bedtime;
+  const childrenInput = document.getElementById('sleep-children-input');
+  if (childrenInput && document.activeElement !== childrenInput) {
+    childrenInput.value = (d.children || []).join(', ');
+  }
+  renderSleepChildrenCheckboxes(d.children || []);
+  const graceInput = document.getElementById('sleep-grace-input');
+  if (graceInput && document.activeElement !== graceInput) {
+    graceInput.value = String(d.grace_minutes ?? 10);
+  }
+  document.getElementById('aid-type').value = d.aid_type;
+  const minInput = document.getElementById('aid-duration-min');
+  const secInput = document.getElementById('aid-duration-sec');
+  if (document.activeElement !== minInput && document.activeElement !== secInput) {
+    setAidDurationInputs(d.aid_duration_sec || (d.aid_duration_min || 20) * 60);
+  }
+  document.getElementById('auto-aid').checked = d.auto_aid;
+  const remindInput = document.getElementById('sleep-remind-text');
+  if (document.activeElement !== remindInput) {
+    remindInput.value = d.remind_text || '宝贝，该准备睡觉啦';
+  }
+  updateSleepStateUI(d);
+}
+
+function applySleepStatusResponse(response) {
+  if (response && response.ok === false && !response.sleep) return false;
+  const sleep = response && response.sleep ? response.sleep : response;
+  if (!sleep || typeof sleep !== 'object') return false;
+  updateSleepStateUI(sleep);
+  return true;
+}
+
+function renderSleepPresenceDebug(d) {
+  const el = document.getElementById('sleep-presence-debug');
+  if (!el) return;
+  const presence = d.presence || {};
+  const configured = Array.isArray(presence.configured_children)
+    ? presence.configured_children
+    : (Array.isArray(d.children) ? d.children : []);
+  const visible = Array.isArray(presence.visible_children)
+    ? presence.visible_children
+    : (Array.isArray(d.visible_children) ? d.visible_children : []);
+  const lastSeen = Array.isArray(presence.last_seen) ? presence.last_seen : [];
+  const seenText = lastSeen.length
+    ? lastSeen.map(item => {
+      const age = item.age_sec === null || item.age_sec === undefined ? '未收到' : `${item.age_sec}s前`;
+      return `${item.unique_name}: ${item.visible ? '可见' : '不可见'} (${age})`;
+    }).join('；')
+    : '还没有收到人物识别上报';
+  el.innerHTML = `监测名单: ${escapeHtml(configured.join(', ') || '未配置')}<br>` +
+    `画面可见: ${escapeHtml(visible.join(', ') || '无')} · 上报有效期 ${presence.ttl_sec || 30}s<br>` +
+    `最近上报: ${escapeHtml(seenText)}`;
+}
+
+function updateSleepStateUI(d) {
+  const el = document.getElementById('sleep-state');
+  el.className = 'sleep-state ' + d.state;
+  const labels = {
+    awake:    '🛏️ 未到睡觉时间',
+    sleeping: '😴 已入睡 · '+ (d.since || ''),
+    restless: '⚠️ 久未入睡 · '+ (d.since || ''),
+    away:     '👤 到点后未看到已配置孩子',
+  };
+  el.textContent = labels[d.state] || labels.awake;
+  renderSleepPresenceDebug(d);
+
+  // 更新助眠盒状态
+  const box = document.getElementById('aid-box');
+  if (d.aid_active) {
+    box.classList.add('active');
+    const remainingSeconds = sleepAidRemainingSeconds(d);
+    if (remainingSeconds <= 0) {
+      stopAidCountdown();
+      box.classList.remove('active');
+      document.getElementById('aid-box-sub').textContent = '助眠已结束';
+    } else {
+      startAidCountdown(remainingSeconds);
+    }
+  } else {
+    stopAidCountdown();
+    box.classList.remove('active');
+    document.getElementById('aid-box-sub').textContent = '手动开始助眠模式';
+  }
+}
+
+async function saveSleepSettings() {
+  const durationSeconds = getAidDurationSeconds();
+  const body = {
+    bedtime: document.getElementById('bedtime-input').value,
+    children: collectSelectedSleepChildren(),
+    grace_minutes: Number.parseInt(document.getElementById('sleep-grace-input').value || '10', 10),
+    aid_type: document.getElementById('aid-type').value,
+    aid_duration_min: Math.ceil(durationSeconds / 60),
+    aid_duration_sec: durationSeconds,
+    auto_aid: document.getElementById('auto-aid').checked,
+  };
+  const response = await post(ENDPOINTS.sleepSettings, body);
+  if (API.USE_MOCK) {
+    MOCK_SLEEP.bedtime = body.bedtime;
+    MOCK_SLEEP.aid_type = body.aid_type;
+    MOCK_SLEEP.aid_duration_min = body.aid_duration_min;
+    MOCK_SLEEP.aid_duration_sec = body.aid_duration_sec;
+    MOCK_SLEEP.auto_aid = body.auto_aid;
+    MOCK_SLEEP.remind_text = document.getElementById('sleep-remind-text').value.trim() || MOCK_SLEEP.remind_text;
+  }
+  if (!applySleepStatusResponse(response)) await loadSleepSettings();
+  showToast({type:'info', text:'睡眠设置已保存', time: nowTime()});
+}
+
+function saveSleepSettingsCustom() {
+  saveSleepSettings();
+}
+
+async function startAid() {
+  const type = document.getElementById('aid-type').value;
+  const durationSeconds = getAidDurationSeconds();
+  const response = await post(ENDPOINTS.sleepAidStart, {
+    type,
+    duration_min: Math.ceil(durationSeconds / 60),
+    duration_sec: durationSeconds,
+  });
+  if (API.USE_MOCK) {
+    MOCK_SLEEP.aid_active = true;
+    MOCK_SLEEP.aid_duration_min = Math.ceil(durationSeconds / 60);
+    MOCK_SLEEP.aid_duration_sec = durationSeconds;
+    const box = document.getElementById('aid-box');
+    box.classList.add('active');
+  }
+  if (!applySleepStatusResponse(response)) {
+    startAidCountdown(durationSeconds);
+  }
+  showToast({type:'info', text:'助眠计时已开始', time: nowTime()});
+}
+
+async function stopAid() {
+  const response = await post(ENDPOINTS.sleepAidStop);
+  stopAidCountdown();
+  applySleepStatusResponse(response);
+  if (API.USE_MOCK) {
+    MOCK_SLEEP.aid_active = false;
+    const box = document.getElementById('aid-box');
+    box.classList.remove('active');
+    document.getElementById('aid-box-sub').textContent = '手动开始助眠模式';
+  }
+  showToast({type:'info', text:'助眠模式已停止', time: nowTime()});
+}
+
+async function remindSleep() {
+  const text = document.getElementById('sleep-remind-text').value.trim() || '宝贝，该准备睡觉啦';
+  const response = await post(ENDPOINTS.sleepRemind, {text});
+  if (API.USE_MOCK) MOCK_SLEEP.remind_text = text;
+  applySleepStatusResponse(response);
+  showToast({type:'info', text:'提醒入睡已发送', time: nowTime()});
+}
+
+function openLightbox(src) {
+  if (src) document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
+// ===================================================================
+//  实时通信预留
+// ===================================================================
+function initRealtimeChannel() {
+  if (!RESERVED_FEATURES.realtimeSocket.enabled || API.USE_MOCK) return;
+  // 板端支持 WebSocket 后，可在这里替换或减少 setInterval 轮询。
+  const url = API.BASE_URL.replace(/^http/, 'ws') + RESERVED_FEATURES.realtimeSocket.path;
+  console.log('reserved websocket endpoint:', url);
+}
+
+// ===================================================================
+//  初始化
+// ===================================================================
+function init() {
+  bindMovementControls();
+  initRealtimeChannel();
+  checkConn();
+  setInterval(checkConn,    30000);
+  startPageRefresh(currentPage);
+}
+let dashboardBooted = false;
+function bootDashboard() {
+  if (dashboardBooted) return;
+  dashboardBooted = true;
+  init();
+}
+if (CLIENT.shouldBootDashboard(document.readyState)) {
+  bootDashboard();
+} else {
+  document.addEventListener('DOMContentLoaded', bootDashboard, { once: true });
+  setTimeout(bootDashboard, 0);
+}
+</script>
+</body>
+</html>

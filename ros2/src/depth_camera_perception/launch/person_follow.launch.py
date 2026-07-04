@@ -1,0 +1,106 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def generate_launch_description():
+    default_params_file = PathJoinSubstitution(
+        [FindPackageShare("depth_camera_perception"), "config", "person_follow_params.yaml"]
+    )
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument("params_file", default_value=default_params_file),
+            DeclareLaunchArgument("color_topic", default_value="/camera/color/image_raw"),
+            DeclareLaunchArgument("depth_topic", default_value="/camera/depth/image_raw"),
+            DeclareLaunchArgument("camera_info_topic", default_value="/camera/color/camera_info"),
+            DeclareLaunchArgument("odom_topic", default_value="/odom_combined"),
+            DeclareLaunchArgument("cmd_vel_raw_topic", default_value="/cmd_vel_raw"),
+            DeclareLaunchArgument("status_topic", default_value="/depth_camera/person_follow_status"),
+            DeclareLaunchArgument("obstacle_status_topic", default_value="/depth_camera/obstacle_status"),
+            DeclareLaunchArgument("detector_backend", default_value="rknn"),
+            DeclareLaunchArgument("model_path", default_value="/home/elf/ros2/yolov8n-board-rk3588-fp.rknn"),
+            DeclareLaunchArgument("mode", default_value="nearest"),
+            DeclareLaunchArgument("target_name", default_value=""),
+            DeclareLaunchArgument("face_identity_root", default_value="/home/elf/face_identity_rk3588"),
+            DeclareLaunchArgument(
+                "pose_model_path",
+                default_value="/home/elf/face_identity_rk3588/models/rknn/pose_yolov8n_hybrid.rknn",
+            ),
+            DeclareLaunchArgument(
+                "pose_lib_path",
+                default_value="/home/elf/face_identity_rk3588/native/build/libperson_pose.so",
+            ),
+            DeclareLaunchArgument("identity_lost_timeout_s", default_value="0.50"),
+            DeclareLaunchArgument("confidence", default_value="0.4"),
+            DeclareLaunchArgument("roi_fraction", default_value="0.5"),
+            DeclareLaunchArgument("process_period_sec", default_value="0.10"),
+            DeclareLaunchArgument("control_period_sec", default_value="0.10"),
+            DeclareLaunchArgument("camera_timeout_s", default_value="0.50"),
+            DeclareLaunchArgument("auto_start", default_value="true"),
+            DeclareLaunchArgument("follow_distance_m", default_value="1.20"),
+            DeclareLaunchArgument("distance_tolerance_m", default_value="0.08"),
+            DeclareLaunchArgument("follow_max_forward_mps", default_value="0.40"),
+            DeclareLaunchArgument("follow_linear_gain", default_value="1.0"),
+            DeclareLaunchArgument("follow_angular_gain", default_value="0.8"),
+            DeclareLaunchArgument("follow_max_angular_z", default_value="0.25"),
+            DeclareLaunchArgument("center_tolerance_fraction", default_value="0.02"),
+            DeclareLaunchArgument("search_angular_z", default_value="1.25"),
+            DeclareLaunchArgument("search_max_yaw_rad", default_value="6.2831853"),
+            DeclareLaunchArgument("search_timeout_s", default_value="30.0"),
+            DeclareLaunchArgument("target_lost_timeout_s", default_value="0.50"),
+            DeclareLaunchArgument("obstacle_status_timeout_s", default_value="0.50"),
+            DeclareLaunchArgument("web_host", default_value="0.0.0.0"),
+            DeclareLaunchArgument("web_port", default_value="8093"),
+            DeclareLaunchArgument("jpeg_quality", default_value="80"),
+            DeclareLaunchArgument("stream_period_sec", default_value="0.20"),
+            Node(
+                package="depth_camera_perception",
+                executable="person_follow",
+                output="screen",
+                parameters=[
+                    {
+                        "color_topic": LaunchConfiguration("color_topic"),
+                        "depth_topic": LaunchConfiguration("depth_topic"),
+                        "camera_info_topic": LaunchConfiguration("camera_info_topic"),
+                        "odom_topic": LaunchConfiguration("odom_topic"),
+                        "cmd_vel_raw_topic": LaunchConfiguration("cmd_vel_raw_topic"),
+                        "status_topic": LaunchConfiguration("status_topic"),
+                        "obstacle_status_topic": LaunchConfiguration("obstacle_status_topic"),
+                        "detector_backend": LaunchConfiguration("detector_backend"),
+                        "model_path": LaunchConfiguration("model_path"),
+                        "mode": LaunchConfiguration("mode"),
+                        "target_name": LaunchConfiguration("target_name"),
+                        "face_identity_root": LaunchConfiguration("face_identity_root"),
+                        "pose_model_path": LaunchConfiguration("pose_model_path"),
+                        "pose_lib_path": LaunchConfiguration("pose_lib_path"),
+                        "identity_lost_timeout_s": LaunchConfiguration("identity_lost_timeout_s"),
+                        "confidence": LaunchConfiguration("confidence"),
+                        "roi_fraction": LaunchConfiguration("roi_fraction"),
+                        "process_period_sec": LaunchConfiguration("process_period_sec"),
+                        "control_period_sec": LaunchConfiguration("control_period_sec"),
+                        "camera_timeout_s": LaunchConfiguration("camera_timeout_s"),
+                        "auto_start": LaunchConfiguration("auto_start"),
+                        "follow_distance_m": LaunchConfiguration("follow_distance_m"),
+                        "distance_tolerance_m": LaunchConfiguration("distance_tolerance_m"),
+                        "follow_max_forward_mps": LaunchConfiguration("follow_max_forward_mps"),
+                        "follow_linear_gain": LaunchConfiguration("follow_linear_gain"),
+                        "follow_angular_gain": LaunchConfiguration("follow_angular_gain"),
+                        "follow_max_angular_z": LaunchConfiguration("follow_max_angular_z"),
+                        "center_tolerance_fraction": LaunchConfiguration("center_tolerance_fraction"),
+                        "search_angular_z": LaunchConfiguration("search_angular_z"),
+                        "search_max_yaw_rad": LaunchConfiguration("search_max_yaw_rad"),
+                        "search_timeout_s": LaunchConfiguration("search_timeout_s"),
+                        "target_lost_timeout_s": LaunchConfiguration("target_lost_timeout_s"),
+                        "obstacle_status_timeout_s": LaunchConfiguration("obstacle_status_timeout_s"),
+                        "web_host": LaunchConfiguration("web_host"),
+                        "web_port": LaunchConfiguration("web_port"),
+                        "jpeg_quality": LaunchConfiguration("jpeg_quality"),
+                        "stream_period_sec": LaunchConfiguration("stream_period_sec"),
+                    },
+                    LaunchConfiguration("params_file"),
+                ],
+            ),
+        ]
+    )

@@ -1,0 +1,13 @@
+person_follow:
+  ros__parameters:
+    follow_distance_m: 1.20
+    distance_tolerance_m: 0.08
+    follow_max_forward_mps: 0.40
+    follow_linear_gain: 1.0
+    follow_angular_gain: 0.8
+    follow_max_angular_z: 0.25
+    center_tolerance_fraction: 0.02
+    search_angular_z: 1.25
+    search_max_yaw_rad: 6.2831853
+    search_timeout_s: 30.0
+    target_lost_timeout_s: 0.50

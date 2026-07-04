@@ -1,0 +1,90 @@
+# ============================================================
+# 视觉伺服参数 — 修改此文件后重启 servo_controller 即生效
+# 用法: ros2 run face_track servo_controller --ros-args --params-file ~/ros2/src/face_track/config/servo_params.yaml
+# ============================================================
+servo_controller:
+  ros__parameters:
+    # ---- 目标值 ----
+    target_x: 0.5
+    target_y: 0.5
+    target_ratio: 0.3
+
+    # ---- P 增益 ----
+    kp_base: 0.2        # 底座
+    kp_shoulder: 0.15    # 肩部 (前后)
+    kp_elbow: 0.28       # 肘部 (前后补偿)
+    kp_wrist: 0.20       # 腕部 (上下)
+
+    # ---- D 阻尼 ----
+    kd_base: 0.10
+    kd_shoulder: 0.0
+    kd_elbow: 0.15
+    kd_wrist: 0.15
+
+    # ---- 精调阶段底座低灵敏参数 ----
+    kp_base_fine: 0.08
+    kd_base_fine: 0.03
+    max_delta_base_fine: 0.012
+    fine_deadband_x: 0.16
+    fine_wrist_error_sign: -1.0
+
+    # ---- 每帧最大增量 (rad) ----
+    max_delta_base: 0.025       # 底座 60°/s @10Hz
+    max_delta_shoulder: 0.02   # 肩部 30°/s @10Hz
+    max_delta_elbow: 0.026      # 肘部 30°/s @10Hz
+    max_delta_wrist: 0.026      # 腕部 30°/s @10Hz
+    initial_pose_speed_multiplier: 2.0
+
+    # ---- 死区 ----
+    deadband_x: 0.12
+    deadband_y: 0.12
+    deadband_r: 0.12
+
+    # ---- 未检测到书时的底座单轮扫描 ----
+    search_min: -1.047
+    search_max: 1.047
+    search_step: 0.04
+    search_period: 0.10
+    control_publish_hz: 20.0
+    hold_publish_when_active: true
+    vision_stale_hold_sec: 0.3
+    vision_lost_sec: 0.8
+    direction_error_step: 0.2
+
+    # ---- STARTUP_SEARCH j3 levels: physical lower 45deg -> 0deg -> upper 45deg ----
+    # Only affects startup search; safety limits and return-home still use j3_min/j3_max.
+    search_j3_min: 0.785
+    search_j3_mid: 1.571
+    search_j3_max: 2.356
+    startup_found_stable_sec: 0.3
+    min_book_area_ratio: 0.02
+
+    # ---- 粗调进入精调的稳定条件 ----
+    coarse_deadband_x: 0.12
+    coarse_deadband_y: 0.12
+    coarse_stable_sec: 0.3
+
+    # ---- 翻页后局部搜索范围 ----
+    next_page_search_radius_1: 0.524
+    next_page_search_radius_2: 0.785
+
+    # ---- 检测短暂闪断保护 ----
+    lost_book_grace_sec: 0.5
+
+    # ---- 读书模式进入前的初始姿态 ----
+    # j3 的 ROS 数值方向与物理上下相反：j3_min 是物理上限，j3_max 是物理下限。
+    initial_j1: 0.0
+    initial_j2: 0.0
+    initial_j3: 2.618
+    initial_j4: 0.0
+    prepare_tolerance: 0.003
+
+    # ---- 关节限位 (rad) ----
+    j1_min: -1.047
+    j1_max: 1.047
+    j2_min: -1.047
+    j2_max: 0.0
+    j3_min: 0.524
+    j3_max: 2.618
+    j4_min: -1.047
+    j4_max: 1.047

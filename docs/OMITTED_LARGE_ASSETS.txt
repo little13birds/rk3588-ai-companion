@@ -1,0 +1,16 @@
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/SDK/lib/arm/libOrbbecSDK.so.1.5.8
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/SDK/lib/arm64/libOrbbecSDK.so.1.5.8
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/SDK/lib/x64/libOrbbecSDK.so.1.5.8
+ros2/src/yahboomcar_mediapipe/yahboomcar_mediapipe/file/shape_predictor_68_face_landmarks.dat
+ros2/src/yahboomcar_slam/params/ORBvoc.txt
+
+Additional binary assets intentionally ignored by .gitignore in this public snapshot:
+
+cloud-model/audio/fillers/
+cloud-model/audio/silence.wav
+cloud-model/audio/libaec_bridge.so
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/SDK/lib/arm/libudev.so*
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/SDK/lib/arm64/libudev.so*
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/dependencies/glog-0.6.0.tar.gz
+ros2/src/OrbbecSDK_ROS2/orbbec_camera/dependencies/magic_enum-0.8.0.tar.gz
+ros2/src/face_track/config/res10_300x300_ssd_iter_140000.caffemodel

@@ -1,0 +1,52 @@
+<launch>
+    <!-- unique camera name-->
+    <arg name="camera_name" default="camera"/>
+    <!-- Hardware depth registration -->
+    <arg name="3d_sensor" default="gemini2"/>
+    <!-- stereo_s_u3, astrapro, astra -->
+    <arg name="camera1_prefix" default="01"/>
+    <arg name="camera2_prefix" default="02"/>
+    <arg name="camera3_prefix" default="03"/>
+    <arg name="camera1_serial_number" default="AY3A13100D4"/>
+    <arg name="camera2_serial_number" default="AY3A131009C"/>
+    <arg name="camera3_serial_number" default="AY3A13100D3"/>
+    <arg name="device_num" default="3"/>
+    <node name="camera" pkg="orbbec_camera" exec="ob_cleanup_shm_node" output="screen"/>
+    <group>
+        <include file="$(find-pkg-share orbbec_camera)/launch/$(var 3d_sensor).launch.xml">
+            <arg name="camera_name" value="camera_$(var camera1_prefix)"/>
+            <arg name="serial_number" value="$(var camera1_serial_number)"/>
+            <arg name="device_num" value="$(var device_num)"/>
+            <arg name="sync_mode" value="primary_mcu_trigger"/>
+            <arg name="ir_trigger_signal_in_delay" value="160"/>
+            <arg name="rgb_trigger_signal_in_delay" value="0"/>
+            <arg name="device_trigger_signal_out_delay" value="0"/>
+            <arg name="sync_signal_trigger_out" value="false"/>
+        </include>
+    </group>
+    <group>
+        <include file="$(find-pkg-share orbbec_camera)/launch/$(var 3d_sensor).launch.xml">
+            <arg name="camera_name" value="camera_$(var camera2_prefix)"/>
+            <arg name="serial_number" value="$(var camera2_serial_number)"/>
+            <arg name="device_num" value="$(var device_num)"/>
+            <arg name="sync_mode" value="secondary"/>
+            <arg name="ir_trigger_signal_in_delay" value="0"/>
+            <arg name="rgb_trigger_signal_in_delay" value="0"/>
+            <arg name="device_trigger_signal_out_delay" value="0"/>
+            <arg name="sync_signal_trigger_out" value="false"/>
+        </include>
+    </group>
+    <group>
+        <include file="$(find-pkg-share orbbec_camera)/launch/$(var 3d_sensor).launch.xml">
+            <arg name="camera_name" value="camera_$(var camera3_prefix)"/>
+            <arg name="serial_number" value="$(var camera3_serial_number)"/>
+            <arg name="device_num" value="$(var device_num)"/>
+            <arg name="sync_mode" value="secondary"/>
+            <arg name="ir_trigger_signal_in_delay" value="0"/>
+            <arg name="rgb_trigger_signal_in_delay" value="0"/>
+            <arg name="device_trigger_signal_out_delay" value="0"/>
+        </include>
+    </group>
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_tf"
+          args="0 0 0 0 0 0 camera01_link camera02_link"/>
+</launch>

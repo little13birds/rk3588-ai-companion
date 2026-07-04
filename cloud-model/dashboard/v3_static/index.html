@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>小智家长端</title>
+  <link rel="stylesheet" href="/v3-dashboard/css/base.css" />
+  <link rel="stylesheet" href="/v3-dashboard/css/layout.css" />
+  <link rel="stylesheet" href="/v3-dashboard/css/components.css" />
+</head>
+<body data-theme="day">
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-eye" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title">小智看护</div>
+          <div class="brand-subtitle">家长端控制台</div>
+        </div>
+      </div>
+      <nav class="side-nav" aria-label="主导航">
+        <button class="side-nav-item active" data-page="home">首页概览</button>
+        <button class="side-nav-item" data-page="care">看护与睡眠</button>
+        <button class="side-nav-item" data-page="control">机器人控制</button>
+        <button class="side-nav-item" data-page="records">历史记录</button>
+        <button class="side-nav-item" data-page="system">系统信息</button>
+      </nav>
+      <div class="sidebar-status">
+        <div class="tiny-label">连接状态</div>
+        <div class="status-pill"><span class="dot ok"></span><span>机器人后端在线</span></div>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" aria-label="打开菜单"><span></span></button>
+        <div class="title-block">
+          <h1 id="pageTitle">首页概览</h1>
+          <p id="pageSubtitle">实时画面、孩子状态与最近对话</p>
+        </div>
+        <div class="top-actions">
+          <button class="action-button secondary" id="refreshAllButton">刷新</button>
+          <button class="action-button neutral" id="themeToggleButton">夜间</button>
+          <button class="action-button danger" id="emergencyStopButton">急停</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section class="page active" id="page-home">
+          <div class="home-grid">
+            <div class="main-stack">
+              <section class="panel no-padding">
+                <div class="live-view">
+                  <img id="liveFrame" alt="实时画面" />
+                  <div class="live-badges">
+                    <span id="cameraSource">平台摄像头</span>
+                    <span id="cameraFps">15 FPS 目标</span>
+                  </div>
+                  <div class="live-caption">
+                    <strong>实时看护画面</strong>
+                    <span id="liveUpdated">等待刷新</span>
+                  </div>
+                </div>
+              </section>
+              <section class="metric-grid" id="homeMetrics"></section>
+            </div>
+
+            <section class="panel conversation-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>孩子与小智对话</h2>
+                  <p>最新消息在底部，家长播报也会出现在这里</p>
+                </div>
+              </div>
+              <div class="conversation-list" id="conversationList"></div>
+              <form class="composer" id="messageForm">
+                <input id="messageInput" placeholder="发送一句话给小智播报" />
+                <button class="action-button primary" type="submit">发送</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="page-care">
+          <div class="main-stack">
+            <section class="summary-grid" id="careSummary"></section>
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>看护设置</h2>
+                  <p>低频设置放入弹窗，主页只保留摘要</p>
+                </div>
+              </div>
+              <div class="button-row">
+                <button class="action-button primary" id="openSleepSettings">睡眠设置</button>
+                <button class="action-button secondary" id="sendSleepReminder">立即提醒睡觉</button>
+                <button class="action-button neutral" id="startAidButton">助眠控制</button>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>最近看护事件</h2>
+                  <p>危险、摔倒、睡眠 presence 和系统切换统一展示</p>
+                </div>
+              </div>
+              <div class="event-list" id="careEvents"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="page-control">
+          <div class="control-grid">
+            <div class="main-stack">
+              <section class="panel no-padding">
+                <div class="live-view control-live">
+                  <img id="controlFrame" alt="控制视角" />
+                  <div class="live-badges">
+                    <span>控制视角</span>
+                    <span>平台摄像头</span>
+                  </div>
+                </div>
+              </section>
+              <section class="panel">
+                <div class="panel-header">
+                  <div>
+                    <h2>手动移动</h2>
+                    <p>按钮加大，适合手机触控</p>
+                  </div>
+                </div>
+                <div class="drive-grid">
+                  <div class="dpad">
+                    <button data-drive="forward" class="up">↑</button>
+                    <button data-drive="left" class="left">←</button>
+                    <button data-drive="stop" class="stop">■</button>
+                    <button data-drive="right" class="right">→</button>
+                    <button data-drive="backward" class="down">↓</button>
+                  </div>
+                  <div class="drive-side">
+                    <label class="field">
+                      <span>速度档位</span>
+                      <select id="driveSpeed"><option>低速 · 室内推荐</option><option>中速</option></select>
+                    </label>
+                    <div class="status-note" id="driveStatus">等待操作</div>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <div class="main-stack">
+              <section class="panel">
+                <div class="panel-header">
+                  <div>
+                    <h2>找孩子</h2>
+                    <p>目标选择会保留，开始后可随时停止</p>
+                  </div>
+                </div>
+                <label class="field">
+                  <span>目标人物</span>
+                  <select id="findTarget"><option>tao</option><option>xiao</option><option>最近的人</option></select>
+                </label>
+                <label class="field">
+                  <span>超时</span>
+                  <select id="findTimeout"><option>1 分钟</option><option>2 分钟</option></select>
+                </label>
+                <div class="button-row">
+                  <button class="action-button primary" id="startFindButton">开始寻找</button>
+                  <button class="action-button neutral" id="stopFindButton">停止</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="page-records">
+          <section class="panel">
+            <div class="panel-header responsive-header">
+              <div>
+                <h2>历史画面</h2>
+                <p>一行一个日期，图片按时间从新到旧排列</p>
+              </div>
+              <div class="date-toolbar">
+                <button class="action-button neutral" id="prevDateButton">前一天</button>
+                <input id="historyDate" type="date" />
+                <button class="action-button primary" id="todayButton">今天</button>
+                <button class="action-button neutral" id="nextDateButton">后一天</button>
+                <button class="action-button secondary" id="openHistoryGalleryButton">全部预览</button>
+              </div>
+            </div>
+            <div id="historyCategories" class="history-categories"></div>
+          </section>
+        </section>
+
+        <section class="page" id="page-system">
+          <div class="system-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>系统组件</h2>
+                  <p id="systemUpdated">每 5 秒刷新，也可手动刷新</p>
+                </div>
+              </div>
+              <div id="systemComponents" class="component-list"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>刷新与持久设置</h2>
+                  <p>这里模拟持久化配置，后续可接 sqlite 或现有 dashboard state</p>
+                </div>
+              </div>
+              <form class="settings-form" id="settingsForm">
+                <label class="field"><span>图片刷新间隔 ms</span><input name="cameraRefreshMs" type="number" min="250" max="10000" /></label>
+                <label class="field"><span>状态刷新间隔 ms</span><input name="statusRefreshMs" type="number" min="500" max="30000" /></label>
+                <label class="field"><span>系统刷新间隔 ms</span><input name="systemRefreshMs" type="number" min="1000" max="60000" /></label>
+                <label class="field"><span>每类历史显示数量</span><input name="historyPageSize" type="number" min="3" max="24" /></label>
+                <label class="field"><span>主题</span><select name="theme"><option value="day">白天</option><option value="night">夜间</option></select></label>
+                <button class="action-button primary" type="submit">保存设置</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="sleepSettingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2>睡眠设置</h2>
+          <p>使用系统时间控件，保存后同步到 mock 后端</p>
+        </div>
+        <button class="action-button neutral" data-close-modal>关闭</button>
+      </div>
+      <form class="modal-body" id="sleepSettingsForm">
+        <label class="field"><span>睡觉时间</span><input name="sleepTime" type="time" required /></label>
+        <label class="field"><span>提醒语录</span><textarea name="sleepReminderText" maxlength="80"></textarea></label>
+        <div class="recipient-section">
+          <div class="recipient-header">
+            <span>提醒对象</span>
+            <strong id="sleepRecipientSummary">将提醒：tao、xiao</strong>
+          </div>
+          <div class="child-checks" id="sleepRecipientList">
+            <label class="recipient-card">
+              <input type="checkbox" name="sleepChildren" value="tao" checked />
+              <span class="recipient-main"><strong>tao</strong><span>孩子 · 睡眠监测</span></span>
+              <span class="recipient-badge">提醒</span>
+            </label>
+            <label class="recipient-card">
+              <input type="checkbox" name="sleepChildren" value="xiao" checked />
+              <span class="recipient-main"><strong>xiao</strong><span>孩子 · 睡眠监测</span></span>
+              <span class="recipient-badge">提醒</span>
+            </label>
+            <label class="recipient-card">
+              <input type="checkbox" name="sleepChildren" value="mom" />
+              <span class="recipient-main"><strong>mom</strong><span>家长 · 不触发睡眠提醒</span></span>
+              <span class="recipient-badge">不提醒</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="action-button neutral" type="button" data-close-modal>取消</button>
+          <button class="action-button primary" type="submit">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="aidSettingsModal">
+    <div class="modal compact-modal">
+      <div class="modal-header">
+        <div>
+          <h2>助眠控制</h2>
+          <p>当前为 mock 控制，后续接入 TTS/音频播放队列</p>
+        </div>
+        <button class="action-button neutral" data-close-modal>关闭</button>
+      </div>
+      <div class="modal-body">
+        <label class="field">
+          <span>助眠模式</span>
+          <select id="aidMode">
+            <option>白噪声</option>
+            <option>轻柔故事</option>
+            <option>睡前音乐</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>持续时间</span>
+          <select id="aidDuration">
+            <option>10 分钟</option>
+            <option>20 分钟</option>
+            <option>30 分钟</option>
+          </select>
+        </label>
+        <div class="status-note full-width" id="aidStatus">未开始</div>
+        <div class="modal-actions">
+          <button class="action-button neutral" type="button" id="stopAidButton">停止助眠</button>
+          <button class="action-button primary" type="button" id="startAidConfirmButton">开始助眠</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="historyGalleryModal">
+    <div class="modal gallery-modal">
+      <div class="modal-header">
+        <div>
+          <h2>历史画面全部预览</h2>
+          <p id="historyGallerySummary">选择类别和日期范围后查看</p>
+        </div>
+        <button class="action-button neutral" data-close-modal>关闭</button>
+      </div>
+      <div class="modal-body gallery-body">
+        <div class="gallery-filters">
+          <div class="field">
+            <span>内容类型</span>
+            <div class="filter-dropdown" id="historyFilterDropdown">
+              <button class="filter-dropdown-toggle" id="historyFilterToggle" type="button" aria-expanded="false">
+                <span id="historyFilterSummary">全部类型</span>
+                <span class="filter-caret" aria-hidden="true"></span>
+              </button>
+              <div class="filter-dropdown-menu" id="historyFilterTypes">
+                <label><input type="checkbox" name="historyFilterTypes" value="safety" checked />危险事件</label>
+                <label><input type="checkbox" name="historyFilterTypes" value="sleep" checked />睡眠抓拍</label>
+                <label><input type="checkbox" name="historyFilterTypes" value="reading" checked />读书记录</label>
+                <label><input type="checkbox" name="historyFilterTypes" value="system" checked />系统切换</label>
+              </div>
+            </div>
+          </div>
+          <label class="field">
+            <span>开始日期</span>
+            <input id="historyRangeStart" type="date" />
+          </label>
+          <label class="field">
+            <span>结束日期</span>
+            <input id="historyRangeEnd" type="date" />
+          </label>
+          <button class="action-button primary" id="historyGalleryApply" type="button">应用筛选</button>
+        </div>
+        <div id="historyGalleryContent" class="history-gallery-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="imagePreviewModal">
+    <div class="image-preview">
+      <img id="previewImage" alt="历史画面预览" />
+      <div class="preview-caption" id="previewCaption"></div>
+      <button class="preview-close" data-close-modal>关闭</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script type="module" src="/v3-dashboard/js/app.js"></script>
+</body>
+</html>

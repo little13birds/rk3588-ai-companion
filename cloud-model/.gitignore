@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+audio/generated_phrases/
+safety_guard_native/build/
+safety_guard_native/*.so
+safety_guard/models/
+safety_records/
+dashboard_records/
+
+reading_captures/
+logs/
+run/
+Log/

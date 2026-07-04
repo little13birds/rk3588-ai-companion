@@ -1,0 +1,40 @@
+# ============================================================
+# 视觉伺服参数 — 修改此文件后重启 launch 即生效
+# ============================================================
+face_track:
+  face_detector:
+    ros__parameters:
+      image_topic: "/image_raw"
+      publish_annotated: true
+      scale_factor: 1.1          # Haar 检测缩放因子
+      min_neighbors: 5           # 最小邻近窗口数（越高误检越少）
+      min_size_w: 60             # 最小人脸宽度
+      min_size_h: 60             # 最小人脸高度
+
+  servo_controller:
+    ros__parameters:
+      # ---- 目标值 ----
+      target_x: 0.5              # 脸中心目标 x (0~1，0.5=画面中心)
+      target_y: 0.5              # 脸中心目标 y
+      target_ratio: 0.20         # 人脸占图面积目标比例 (20%)
+
+      # ---- PI 增益 (修改后调大) ----
+      kp_x: 0.15                 # 水平 P 增益 → 底座 J1 旋转
+      ki_x: 0.01                 # 水平 I 增益
+      kp_y: 0.12                 # 垂直 P 增益 → 肩肘 J2+J3 协同
+      ki_y: 0.01                 # 垂直 I 增益
+      kp_z: 0.10                 # 深度 P 增益 → 肩肘 J2+J3 协同
+      ki_z: 0.005                # 深度 I 增益
+
+      # ---- 速度限幅 (单位: rad/s 或 m/s) ----
+      max_angular_z: 0.3         # 底座最大角速度
+      max_linear_z:  0.05        # 垂直最大线速度
+      max_linear_x:  0.05        # 前后最大线速度
+
+      # ---- 死区 (误差小于此值不动作) ----
+      deadband_x: 0.03           # 水平死区 (±3% 画面宽度)
+      deadband_y: 0.03           # 垂直死区 (±3% 画面高度)
+      deadband_z: 0.02           # 大小死区 (±2% 面积比)
+
+      # ---- 话题 ----
+      cmd_topic: "/servo_node/delta_twist_cmds"
